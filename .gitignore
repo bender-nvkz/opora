@@ -1,0 +1,27 @@
+# Dependencies
+/vendor/
+/node_modules/
+/apps/admin/node_modules/
+
+# Application runtime
+/runtime/
+
+# Environment configuration
+/config/params/local.php
+.env
+.env.local
+
+# Build outputs
+/apps/admin/dist/
+
+# IDE and editor directories
+/.idea/
+/.vscode/
+/.local/
+
+# OS files
+*.DS_Store
+
+# Cache files
+.php-cs-fixer.cache
+.phpunit.result.cache

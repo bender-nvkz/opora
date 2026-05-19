@@ -1,0 +1,32 @@
+name: Mirror to GitLab
+
+on:
+  push:
+    branches:
+      - '**'
+  delete:
+    branches:
+      - '**'
+
+jobs:
+  mirror_job:
+    runs-on: ubuntu-latest
+    name: Sync Repository
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Скачиваем всю историю
+
+      - name: Push to GitLab via HTTPS Token
+        run: |
+          # Настраиваем URL с токеном для авторизации в GitLab
+          # Формат: https://oauth2:TOKEN@gitlab.domain.ru/user/repo.git
+          GITLAB_URL="https://oauth2:${{ secrets.GITLAB_PROJECT_TOKEN }}@git.meiji.media/opora/opora.git"
+          
+          # Добавляем GitLab как второй удаленный репозиторий
+          git remote add gitlab "$GITLAB_URL"
+          
+          # Принудительно пушим все ветки и теги
+          git push gitlab --prune --all
+          git push gitlab --tags
