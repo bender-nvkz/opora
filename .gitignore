@@ -18,6 +18,8 @@
 /.idea/
 /.vscode/
 /.local/
+/.roo/
+/.roomodes
 
 # OS files
 *.DS_Store
