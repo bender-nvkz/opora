@@ -8,7 +8,7 @@
 ## Быстрый старт
 
 ```bash
-git clone https://github.com/opora/opora.git
+git clone https://github.com/bender-nvkz/opora
 cd opora
 cp .env.example .env          # настрой переменные окружения
 docker compose up -d          # поднять PostgreSQL, Redis, nginx, php-fpm
