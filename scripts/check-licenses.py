@@ -11,10 +11,13 @@ except json.JSONDecodeError as e:
 
 violations = []
 for pkg, info in data.get('dependencies', {}).items():
-    license_ = info.get('license', '').lower()
-    for f in FORBIDDEN:
-        if f.lower() in license_:
-            violations.append(f"{pkg}: {info.get('license')}")
+    licenses = info.get('license', [])
+    if isinstance(licenses, str):
+        licenses = [licenses]
+    for lic in licenses:
+        for f in FORBIDDEN:
+            if f.lower() in lic.lower():
+                violations.append(f"{pkg}: {lic}")
 
 if violations:
     print("FAIL: Несовместимые лицензии найдены:")
