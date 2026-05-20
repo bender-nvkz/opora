@@ -1,6 +1,7 @@
 {
   "name": "opora",
   "private": true,
+  "license": "AGPL-3.0-only",
   "scripts": {
     "dev": "echo 'Frontend not yet initialized'",
     "build": "echo 'Frontend not yet initialized'",
