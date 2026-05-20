@@ -1,0 +1,362 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PHP_VERSION: "8.4"
+  NODE_VERSION: "22"
+  PNPM_VERSION: "9.15.4"
+
+jobs:
+  # ─────────────────────────────────────────────────────────────────
+  # Job: PHP code style check
+  # ─────────────────────────────────────────────────────────────────
+  php-cs:
+    name: "PHP CS Fixer"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo, pdo_pgsql, zip, intl, mbstring
+          coverage: none
+          tools: composer:2.8.4
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-scripts
+
+      - name: Run PHP CS Fixer (check mode)
+        run: vendor/bin/php-cs-fixer fix --dry-run --diff --config=.php-cs-fixer.php
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job: PHPStan static analysis
+  # ─────────────────────────────────────────────────────────────────
+  phpstan:
+    name: "PHPStan (level 8)"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo, pdo_pgsql, zip, intl, mbstring
+          coverage: none
+          tools: composer:2.8.4
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-scripts
+
+      - name: Cache PHPStan results
+        uses: actions/cache@v4
+        with:
+          path: /tmp/phpstan-cache
+          key: phpstan-${{ env.PHP_VERSION }}-${{ hashFiles('phpstan.neon', 'composer.lock') }}-${{ github.sha }}
+          restore-keys: phpstan-${{ env.PHP_VERSION }}-${{ hashFiles('phpstan.neon', 'composer.lock') }}-
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --no-progress --memory-limit=256M
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job: Rector (check-only, не применяет изменения)
+  # ─────────────────────────────────────────────────────────────────
+  rector-check:
+    name: "Rector (check-only)"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo, pdo_pgsql, zip, intl, mbstring
+          coverage: none
+          tools: composer:2.8.4
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-scripts
+
+      - name: Run Rector (dry-run)
+        run: vendor/bin/rector process --dry-run --no-progress-bar
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job: PHPUnit (Unit + Integration tests)
+  # ─────────────────────────────────────────────────────────────────
+  phpunit:
+    name: "PHPUnit"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: opora
+          POSTGRES_PASSWORD: opora_dev_password
+          POSTGRES_DB: opora_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: pdo, pdo_pgsql, zip, intl, mbstring, xdebug
+          coverage: xdebug
+          tools: composer:2.8.4
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-scripts
+
+      - name: Install PostgreSQL extensions
+        run: |
+          PGPASSWORD=opora_dev_password psql \
+            -h 127.0.0.1 \
+            -U opora \
+            -d opora_test \
+            -c "CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\"; CREATE EXTENSION IF NOT EXISTS pg_trgm; CREATE EXTENSION IF NOT EXISTS ltree; CREATE EXTENSION IF NOT EXISTS vector;"
+
+      - name: Run Unit tests
+        run: vendor/bin/phpunit --testsuite Unit --no-coverage
+
+      - name: Run Integration tests with coverage
+        run: vendor/bin/phpunit --testsuite Integration --coverage-clover=runtime/coverage/clover.xml
+        env:
+          DB_DSN: "pgsql:host=127.0.0.1;port=5432;dbname=opora_test"
+          DB_USERNAME: opora
+          DB_PASSWORD: opora_dev_password
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: runtime/coverage/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job: Frontend lint
+  # ─────────────────────────────────────────────────────────────────
+  frontend-lint:
+    name: "Frontend Lint & TypeCheck"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint (Biome)
+        run: pnpm run lint
+
+      - name: TypeScript check
+        run: pnpm run typecheck
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job: Frontend build
+  # ─────────────────────────────────────────────────────────────────
+  frontend-build:
+    name: "Frontend Build"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    needs: [frontend-lint]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: pnpm-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all packages
+        run: pnpm run build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: apps/admin/dist/
+          retention-days: 7
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job: License check
+  # ─────────────────────────────────────────────────────────────────
+  license-check:
+    name: "License Check"
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+          tools: composer:2.8.4
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-interaction --no-scripts
+
+      - name: Check for GPL-incompatible licenses
+        run: |
+          composer licenses --format=json | python3 - << 'PYEOF'
+          import json, sys
+
+          # Лицензии, несовместимые с AGPLv3
+          FORBIDDEN = ['proprietary', 'commercial', 'BSL-1.0', 'SSPL-1.0', 'Commons-Clause']
+
+          data = json.load(sys.stdin)
+          violations = []
+          for pkg, info in data.get('dependencies', {}).items():
+              license_ = info.get('license', '').lower()
+              for f in FORBIDDEN:
+                  if f.lower() in license_:
+                      violations.append(f"{pkg}: {info.get('license')}")
+
+          if violations:
+              print("FAIL: Несовместимые лицензии найдены:")
+              for v in violations:
+                  print(f"  - {v}")
+              sys.exit(1)
+          else:
+              print("OK: Все лицензии совместимы с AGPLv3")
+          PYEOF
+
+  # ─────────────────────────────────────────────────────────────────
+  # Job: CI summary (required для branch protection)
+  # ─────────────────────────────────────────────────────────────────
+  ci-success:
+    name: "CI passed"
+    runs-on: ubuntu-24.04
+    needs:
+      - php-cs
+      - phpstan
+      - rector-check
+      - phpunit
+      - frontend-lint
+      - frontend-build
+      - license-check
+    if: always()
+
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [[ "${{ contains(needs.*.result, 'failure') }}" == "true" ]]; then
+            echo "FAIL: Один или несколько jobs завершились с ошибкой"
+            exit 1
+          fi
+          echo "OK: Все CI jobs прошли успешно"
