@@ -34,7 +34,7 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: pdo, pdo_pgsql, zip, intl, mbstring
           coverage: none
-          tools: composer:2.9.6
+          tools: composer
 
       - name: Cache Composer packages
         uses: actions/cache@v5
@@ -67,7 +67,7 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: pdo, pdo_pgsql, zip, intl, mbstring
           coverage: none
-          tools: composer:2.9.6
+          tools: composer
 
       - name: Cache Composer packages
         uses: actions/cache@v5
@@ -107,7 +107,7 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: pdo, pdo_pgsql, zip, intl, mbstring
           coverage: none
-          tools: composer:2.9.6
+          tools: composer
 
       - name: Cache Composer packages
         uses: actions/cache@v5
@@ -155,7 +155,7 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: pdo, pdo_pgsql, zip, intl, mbstring, xdebug
           coverage: xdebug
-          tools: composer:2.9.6
+          tools: composer
 
       - name: Cache Composer packages
         uses: actions/cache@v5
@@ -186,7 +186,7 @@ jobs:
           DB_PASSWORD: opora_dev_password
 
       - name: Upload coverage report
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: coverage-report
@@ -276,7 +276,7 @@ jobs:
         run: pnpm run build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: frontend-build
           path: apps/admin/dist/
@@ -299,7 +299,7 @@ jobs:
         with:
           php-version: ${{ env.PHP_VERSION }}
           coverage: none
-          tools: composer:2.9.6
+          tools: composer
 
       - name: Cache Composer packages
         uses: actions/cache@v5
