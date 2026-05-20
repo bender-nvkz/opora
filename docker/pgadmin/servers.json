@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "Opora Dev",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "opora",
+      "Username": "opora",
+      "Password": "opora_dev_password",
+      "SSLMode": "prefer"
+    }
+  }
+}
