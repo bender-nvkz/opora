@@ -1,0 +1,12 @@
+includes:
+    - phpstan.neon
+
+parameters:
+    paths:
+        - tests
+
+    level: 6
+
+    ignoreErrors:
+        # В тестах допускается использование мок-объектов без строгой типизации
+        - message: '#Parameter .* of method .* expects .*, PHPUnit\\Framework\\MockObject\\MockObject given#'
