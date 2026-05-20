@@ -1,7 +1,8 @@
 {
   "name": "bender-nvkz/opora",
   "description": "Российская open-source PIM/MDM/DAM платформа",
-  "type": "project",
+  "type": "library",
+  "version": "0.1.0",
   "license": "AGPL-3.0-only",
   "keywords": ["pim", "mdm", "dam", "yii3", "php84"],
   "minimum-stability": "dev",
