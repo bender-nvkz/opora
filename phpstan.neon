@@ -1,0 +1,59 @@
+parameters:
+    # Level 8 — строгий анализ
+    level: 8
+
+    paths:
+        - src
+        - config
+        - packages
+
+    # Исключения для тестов обрабатываются отдельно
+    excludePaths:
+        - vendor
+        - runtime (?)
+        - node_modules (?)
+
+    # Игнорируемые паттерны (Yii3-специфика)
+    ignoreErrors: []
+#    // @todo
+#        # yiisoft/di контейнер — динамическое разрешение зависимостей
+#        - message: '#Call to an undefined method Psr\\Container\\ContainerInterface::#'
+#
+#        # Cycle ORM — динамические property через magic methods
+#        - message: '#Access to an undefined property Cycle\\ORM\\EntityInterface::#'
+#
+#        # yiisoft/config — merge-plan генерируется динамически
+#        - message: '#Variable \$params might not be defined#'
+#          paths:
+#            - config
+#
+#        # Rector-генерируемые конструкции на этапе рефакторинга
+#        - message: '#Unsafe usage of new static\(\)#'
+#          paths:
+#            - src/Domain
+
+    # Обработка bootstrapping-файлов
+    bootstrapFiles:
+        - vendor/autoload.php
+
+    # PHP 8.4 специфика
+    phpVersion: 80400
+
+    # Строгий режим
+    checkExplicitMixedMissingReturn: true
+    checkFunctionNameCase: true
+    checkInternalClassCaseSensitivity: true
+#    reportUnmatchedIgnoredErrors: true // @todo
+    treatPhpDocTypesAsCertain: false
+
+    # Дополнительные правила
+    parallel:
+        maximumNumberOfProcesses: 4
+
+    # Кастомные правила для Yii3
+    stubFiles: []
+
+includes:
+    - vendor/phpstan/phpstan-strict-rules/rules.neon
+    - vendor/phpstan/phpstan-phpunit/extension.neon
+    - vendor/phpstan/phpstan-phpunit/rules.neon

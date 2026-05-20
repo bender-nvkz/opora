@@ -20,13 +20,10 @@ jobs:
 
       - name: Push to GitLab via HTTPS Token
         run: |
-          # Настраиваем URL с токеном для авторизации в GitLab
-          # Формат: https://oauth2:TOKEN@gitlab.domain.ru/user/repo.git
           GITLAB_URL="https://oauth2:${{ secrets.GITLAB_PROJECT_TOKEN }}@git.meiji.media/opora/opora.git"
-          
-          # Добавляем GitLab как второй удаленный репозиторий
+
           git remote add gitlab "$GITLAB_URL"
-          
-          # Принудительно пушим все ветки и теги
-          git push gitlab --prune --all
+
+          # Пушим все ветки и теги без флага --prune
+          git push gitlab --all
           git push gitlab --tags

@@ -1,0 +1,10 @@
+# Все файлы требуют ревью от команды ядра
+* @opora/core-team
+
+# ADR требуют ревью архитектора
+docs/architecture/decisions/ @opora/architects
+
+# CI/CD требует ревью DevOps
+.github/workflows/ @opora/devops
+Dockerfile @opora/devops
+compose.yaml @opora/devops
