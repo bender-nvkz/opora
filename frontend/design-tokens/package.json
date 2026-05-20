@@ -1,0 +1,20 @@
+{
+  "name": "@opora/design-tokens",
+  "version": "0.0.1",
+  "private": false,
+  "description": "Опора дизайн-токены — CSS-переменные, цвета, типографика, отступы",
+  "license": "AGPL-3.0-only",
+  "type": "module",
+  "main": "./src/index.css",
+  "exports": {
+    ".": "./src/index.css",
+    "./tokens.json": "./src/tokens.json"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "build": "echo 'design-tokens: no build step (CSS-only package)'",
+    "clean": "echo 'nothing to clean'"
+  }
+}

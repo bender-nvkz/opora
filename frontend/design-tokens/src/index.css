@@ -1,0 +1,165 @@
+/* ═══════════════════════════════════════════════════════════════
+   @opora/design-tokens — CSS Custom Properties
+   Все значения в токенах, никаких магических чисел в компонентах
+   ═══════════════════════════════════════════════════════════════ */
+
+:root {
+    /* ─── Цвета: базовые ────────────────────────────────────────── */
+    --color-primary-50: #eef2ff;
+    --color-primary-100: #e0e7ff;
+    --color-primary-200: #c7d2fe;
+    --color-primary-300: #a5b4fc;
+    --color-primary-400: #818cf8;
+    --color-primary-500: #6366f1;  /* основной цвет бренда */
+    --color-primary-600: #4f46e5;
+    --color-primary-700: #4338ca;
+    --color-primary-800: #3730a3;
+    --color-primary-900: #312e81;
+    --color-primary-950: #1e1b4b;
+
+    --color-neutral-50: #f8fafc;
+    --color-neutral-100: #f1f5f9;
+    --color-neutral-200: #e2e8f0;
+    --color-neutral-300: #cbd5e1;
+    --color-neutral-400: #94a3b8;
+    --color-neutral-500: #64748b;
+    --color-neutral-600: #475569;
+    --color-neutral-700: #334155;
+    --color-neutral-800: #1e293b;
+    --color-neutral-900: #0f172a;
+    --color-neutral-950: #020617;
+
+    --color-success-500: #22c55e;
+    --color-success-600: #16a34a;
+    --color-warning-500: #f59e0b;
+    --color-warning-600: #d97706;
+    --color-danger-500: #ef4444;
+    --color-danger-600: #dc2626;
+    --color-info-500: #3b82f6;
+    --color-info-600: #2563eb;
+
+    /* ─── Семантические цвета: light theme ────────────────────── */
+    --color-background: #ffffff;
+    --color-background-subtle: var(--color-neutral-50);
+    --color-background-muted: var(--color-neutral-100);
+    --color-background-inverse: var(--color-neutral-900);
+
+    --color-surface: #ffffff;
+    --color-surface-raised: #ffffff;
+    --color-surface-overlay: rgba(0, 0, 0, 0.4);
+
+    --color-border: var(--color-neutral-200);
+    --color-border-strong: var(--color-neutral-300);
+    --color-border-focus: var(--color-primary-500);
+
+    --color-text-primary: var(--color-neutral-900);
+    --color-text-secondary: var(--color-neutral-600);
+    --color-text-muted: var(--color-neutral-400);
+    --color-text-inverse: #ffffff;
+    --color-text-link: var(--color-primary-600);
+    --color-text-link-hover: var(--color-primary-700);
+
+    --color-interactive: var(--color-primary-500);
+    --color-interactive-hover: var(--color-primary-600);
+    --color-interactive-active: var(--color-primary-700);
+    --color-interactive-disabled: var(--color-neutral-300);
+
+    /* ─── Типографика ───────────────────────────────────────────── */
+    --font-family-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+    --font-family-mono: "JetBrains Mono", "Fira Code", "Cascadia Code", monospace;
+
+    --font-size-xs: 0.75rem;    /* 12px */
+    --font-size-sm: 0.875rem;   /* 14px */
+    --font-size-base: 1rem;     /* 16px */
+    --font-size-lg: 1.125rem;   /* 18px */
+    --font-size-xl: 1.25rem;    /* 20px */
+    --font-size-2xl: 1.5rem;    /* 24px */
+    --font-size-3xl: 1.875rem;  /* 30px */
+    --font-size-4xl: 2.25rem;   /* 36px */
+
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+
+    --line-height-tight: 1.25;
+    --line-height-snug: 1.375;
+    --line-height-normal: 1.5;
+    --line-height-relaxed: 1.625;
+
+    --letter-spacing-tight: -0.025em;
+    --letter-spacing-normal: 0em;
+    --letter-spacing-wide: 0.025em;
+
+    /* ─── Отступы ────────────────────────────────────────────────── */
+    --spacing-0: 0;
+    --spacing-1: 0.25rem;   /* 4px */
+    --spacing-2: 0.5rem;    /* 8px */
+    --spacing-3: 0.75rem;   /* 12px */
+    --spacing-4: 1rem;      /* 16px */
+    --spacing-5: 1.25rem;   /* 20px */
+    --spacing-6: 1.5rem;    /* 24px */
+    --spacing-8: 2rem;      /* 32px */
+    --spacing-10: 2.5rem;   /* 40px */
+    --spacing-12: 3rem;     /* 48px */
+    --spacing-16: 4rem;     /* 64px */
+
+    /* ─── Радиусы ────────────────────────────────────────────────── */
+    --radius-sm: 0.25rem;   /* 4px */
+    --radius-md: 0.375rem;  /* 6px */
+    --radius-lg: 0.5rem;    /* 8px */
+    --radius-xl: 0.75rem;   /* 12px */
+    --radius-2xl: 1rem;     /* 16px */
+    --radius-full: 9999px;
+
+    /* ─── Тени ───────────────────────────────────────────────────── */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+    /* ─── Анимации ───────────────────────────────────────────────── */
+    --duration-fast: 100ms;
+    --duration-normal: 150ms;
+    --duration-slow: 300ms;
+    --easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+    --easing-in: cubic-bezier(0.4, 0, 1, 1);
+    --easing-out: cubic-bezier(0, 0, 0.2, 1);
+
+    /* ─── Breakpoints (используются в JS, не в CSS vars) ─────────── */
+    /* sm: 640px, md: 768px, lg: 1024px, xl: 1280px, 2xl: 1536px */
+
+    /* ─── Z-индексы ──────────────────────────────────────────────── */
+    --z-dropdown: 1000;
+    --z-sticky: 1100;
+    --z-overlay: 1200;
+    --z-modal: 1300;
+    --z-toast: 1400;
+    --z-tooltip: 1500;
+}
+
+/* Dark theme */
+.dark {
+    --color-background: var(--color-neutral-950);
+    --color-background-subtle: var(--color-neutral-900);
+    --color-background-muted: var(--color-neutral-800);
+    --color-background-inverse: #ffffff;
+
+    --color-surface: var(--color-neutral-900);
+    --color-surface-raised: var(--color-neutral-800);
+
+    --color-border: var(--color-neutral-700);
+    --color-border-strong: var(--color-neutral-600);
+
+    --color-text-primary: var(--color-neutral-50);
+    --color-text-secondary: var(--color-neutral-400);
+    --color-text-muted: var(--color-neutral-500);
+    --color-text-inverse: var(--color-neutral-900);
+    --color-text-link: var(--color-primary-400);
+    --color-text-link-hover: var(--color-primary-300);
+
+    --color-interactive: var(--color-primary-400);
+    --color-interactive-hover: var(--color-primary-300);
+    --color-interactive-active: var(--color-primary-200);
+    --color-interactive-disabled: var(--color-neutral-600);
+}
