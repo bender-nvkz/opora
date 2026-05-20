@@ -1,0 +1,14 @@
+{
+  "name": "opora",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Frontend not yet initialized'",
+    "build": "echo 'Frontend not yet initialized'",
+    "lint": "echo 'Frontend not yet initialized'",
+    "lint:fix": "echo 'Frontend not yet initialized'",
+    "typecheck": "echo 'Frontend not yet initialized'",
+    "storybook": "echo 'Frontend not yet initialized'",
+    "storybook:build": "echo 'Frontend not yet initialized'",
+    "clean": "echo 'Nothing to clean'"
+  }
+}
