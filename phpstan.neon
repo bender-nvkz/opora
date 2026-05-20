@@ -10,8 +10,8 @@ parameters:
     # Исключения для тестов обрабатываются отдельно
     excludePaths:
         - vendor
-        - runtime
-        - node_modules
+        - runtime (?)
+        - node_modules (?)
 
     # Игнорируемые паттерны (Yii3-специфика)
     ignoreErrors: []
