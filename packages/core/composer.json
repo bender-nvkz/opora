@@ -10,6 +10,7 @@
         "php": "^8.4",
 
         "psr/http-message": "^2.0",
+        "psr/http-factory": "^1.0",
         "psr/http-server-middleware": "^1.0",
         "psr/event-dispatcher": "^1.0",
         "psr/log": "^3.0",
@@ -28,6 +29,8 @@
         "symfony/uid": "^7.2",
 
         "cycle/orm": "^2.8",
+
+        "httpsoft/http-message": "^1.1",
 
         "vlucas/phpdotenv": "^5.6"
     },
