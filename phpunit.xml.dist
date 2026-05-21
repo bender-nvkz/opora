@@ -13,12 +13,15 @@
     <testsuites>
         <testsuite name="Unit">
             <directory>tests/Unit</directory>
+            <directory>packages/*/tests/Unit</directory>
         </testsuite>
         <testsuite name="Integration">
             <directory>tests/Integration</directory>
+            <directory>packages/*/tests/Integration</directory>
         </testsuite>
         <testsuite name="Functional">
             <directory>tests/Functional</directory>
+            <directory>packages/*/tests/Functional</directory>
         </testsuite>
     </testsuites>
 

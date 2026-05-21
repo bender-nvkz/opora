@@ -7,6 +7,7 @@ namespace Opora\Core\Module;
 use Cycle\Database\DatabaseProviderInterface;
 use Cycle\Migrations\Config\MigrationConfig;
 use Cycle\Migrations\FileRepository;
+use Cycle\Migrations\MigrationInterface;
 use Cycle\Migrations\Migrator;
 use Psr\Log\LoggerInterface;
 
@@ -28,8 +29,8 @@ final readonly class ModuleMigrationRunner implements ModuleMigrationRunnerInter
     private const string MIGRATION_TABLE = 'opora_migration';
 
     public function __construct(
-        private readonly DatabaseProviderInterface $dbal,
-        private readonly LoggerInterface $logger,
+        private DatabaseProviderInterface $databaseProvider,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -42,7 +43,7 @@ final readonly class ModuleMigrationRunner implements ModuleMigrationRunnerInter
      */
     public function run(string $moduleName, string $directory, string $namespace): void
     {
-        $config = new MigrationConfig([
+        $migrationConfig = new MigrationConfig([
             'directory' => $directory,
             'namespace' => $namespace,
             'table' => self::MIGRATION_TABLE,
@@ -50,14 +51,14 @@ final readonly class ModuleMigrationRunner implements ModuleMigrationRunnerInter
         ]);
 
         $migrator = new Migrator(
-            $config,
-            $this->dbal,
-            new FileRepository($config),
+            $migrationConfig,
+            $this->databaseProvider,
+            new FileRepository($migrationConfig),
         );
 
         $migrator->configure();
 
-        while ($migrator->run() !== null) {
+        while ($migrator->run() instanceof MigrationInterface) {
             // Цикл выполняется пока есть pending миграции
         }
 

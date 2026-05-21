@@ -35,10 +35,10 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 final class InstallCommand extends Command
 {
     public function __construct(
-        private readonly ModuleRegistry $registry,
-        private readonly ModuleMigrationRunnerInterface $migrationRunner,
+        private readonly ModuleRegistry $moduleRegistry,
+        private readonly ModuleMigrationRunnerInterface $moduleMigrationRunner,
         private readonly ContainerInterface $container,
-        private readonly DatabaseProviderInterface $dbal,
+        private readonly DatabaseProviderInterface $databaseProvider,
         private readonly LoggerInterface $logger,
     ) {
         parent::__construct();
@@ -68,29 +68,29 @@ final class InstallCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output);
+        $symfonyStyle = new SymfonyStyle($input, $output);
 
         $modules = $this->resolveModules($input);
 
         if ($modules === []) {
-            $io->warning('No modules to install.');
+            $symfonyStyle->warning('No modules to install.');
             return Command::SUCCESS;
         }
 
-        foreach ($modules as $name) {
-            if ($this->isModuleInstalled($name)) {
-                $io->writeln(\sprintf(
+        foreach ($modules as $module) {
+            if ($this->isModuleInstalled($module)) {
+                $symfonyStyle->writeln(\sprintf(
                     'Module <info>%s</info> already installed. Skipping.',
-                    $name,
+                    $module,
                 ));
                 continue;
             }
 
-            $installer = $this->registry->getInstaller($name);
+            $installer = $this->moduleRegistry->getInstaller($module);
 
             // Применить миграции модуля
-            $this->migrationRunner->run(
-                $name,
+            $this->moduleMigrationRunner->run(
+                $module,
                 $installer->getMigrationDirectory(),
                 $installer->getMigrationNamespace(),
             );
@@ -104,11 +104,11 @@ final class InstallCommand extends Command
             $installer->install($ctx);
 
             // Зарегистрировать установку
-            $this->recordInstallation($name);
+            $this->recordInstallation($module);
 
-            $io->writeln(\sprintf(
+            $symfonyStyle->writeln(\sprintf(
                 'Module <info>%s</info> installed successfully.',
-                $name,
+                $module,
             ));
         }
 
@@ -130,10 +130,10 @@ final class InstallCommand extends Command
 
         if ($filter !== null) {
             /** @var list<string> $names */
-            $names = \array_map('trim', \explode(',', $filter));
+            $names = \array_map(trim(...), \explode(',', $filter));
 
             foreach ($names as $name) {
-                if (!$this->registry->hasInstaller($name)) {
+                if (!$this->moduleRegistry->hasInstaller($name)) {
                     throw new \RuntimeException(\sprintf(
                         'Module "%s" has no registered installer.',
                         $name,
@@ -145,8 +145,8 @@ final class InstallCommand extends Command
         }
 
         return \array_map(
-            static fn (ModuleInstallerInterface $i): string => $i->getModuleName(),
-            $this->registry->getEnabled(),
+            static fn (ModuleInstallerInterface $moduleInstaller): string => $moduleInstaller->getModuleName(),
+            $this->moduleRegistry->getEnabled(),
         );
     }
 
@@ -156,7 +156,7 @@ final class InstallCommand extends Command
     private function isModuleInstalled(string $name): bool
     {
         try {
-            $db = $this->dbal->database();
+            $db = $this->databaseProvider->database();
 
             $result = $db->query(
                 'SELECT 1 FROM opora_installation WHERE module_name = ?',
@@ -179,9 +179,9 @@ final class InstallCommand extends Command
      */
     private function recordInstallation(string $name): void
     {
-        $db = $this->dbal->database();
+        $database = $this->databaseProvider->database();
 
-        $db->execute(
+        $database->execute(
             'INSERT INTO opora_installation (module_name, version, installed_at) VALUES (?, ?, ?)',
             [
                 $name,

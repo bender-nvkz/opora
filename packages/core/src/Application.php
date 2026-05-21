@@ -9,6 +9,7 @@ use Cycle\Database\Config\Postgres\DsnConnectionConfig;
 use Cycle\Database\Config\PostgresDriverConfig;
 use Cycle\Database\DatabaseManager;
 use Cycle\Database\DatabaseProviderInterface;
+use Dotenv\Dotenv;
 use Opora\Core\Command\InstallCommand;
 use Opora\Core\Module\CoreModuleInstaller;
 use Opora\Core\Module\ModuleMigrationRunner;
@@ -55,16 +56,16 @@ final class Application
     {
         $this->loadEnvironment();
 
-        $params = $this->loadParams();
-        $dbal = $this->createDatabaseManager();
-        $logger = new NullLogger();
+        $this->loadParams();
+        $databaseManager = $this->createDatabaseManager();
+        $nullLogger = new NullLogger();
 
-        $container = $this->createContainer($params, $dbal, $logger);
+        $container = $this->createContainer($databaseManager, $nullLogger);
 
-        $console = new SymfonyApplication('Opora', '0.1.0');
-        $console->add($container->get(InstallCommand::class));
+        $application = new SymfonyApplication('Opora', '0.1.0');
+        $application->add($container->get(InstallCommand::class));
 
-        return $console->run(new ArgvInput(), new ConsoleOutput());
+        return $application->run(new ArgvInput(), new ConsoleOutput());
     }
 
     /**
@@ -76,7 +77,7 @@ final class Application
         $envPath = $root . '/.env';
 
         if (\file_exists($envPath)) {
-            $dotenv = \Dotenv\Dotenv::createImmutable($root);
+            $dotenv = Dotenv::createImmutable($root);
             $dotenv->load();
         }
     }
@@ -98,7 +99,7 @@ final class Application
      */
     private function createDatabaseManager(): DatabaseManager
     {
-        $dbConfig = new DatabaseConfig([
+        $databaseConfig = new DatabaseConfig([
             'default' => 'default',
             'databases' => [
                 'default' => ['connection' => 'postgres'],
@@ -114,23 +115,20 @@ final class Application
             ],
         ]);
 
-        return new DatabaseManager($dbConfig);
+        return new DatabaseManager($databaseConfig);
     }
 
     /**
      * Собрать DI-контейнер с сервисами модулей.
-     *
-     * @param array{opora-modules: array<non-empty-string, array{position: int, enabled: bool, description: non-empty-string}>} $params
      */
     private function createContainer(
-        array $params,
-        DatabaseProviderInterface $dbal,
+        DatabaseProviderInterface $databaseProvider,
         LoggerInterface $logger,
     ): Container {
-        $config = ContainerConfig::create()
+        $containerConfig = ContainerConfig::create()
             ->withDefinitions([
                 // Интерфейсы → реализации
-                DatabaseProviderInterface::class => $dbal,
+                DatabaseProviderInterface::class => $databaseProvider,
                 LoggerInterface::class => $logger,
 
                 // Module services
@@ -142,7 +140,7 @@ final class Application
                     ],
                 ],
 
-                ModuleMigrationRunner::class => new ModuleMigrationRunner($dbal, $logger),
+                ModuleMigrationRunner::class => new ModuleMigrationRunner($databaseProvider, $logger),
 
                 CoreModuleInstaller::class => [
                     'class' => CoreModuleInstaller::class,
@@ -166,6 +164,6 @@ final class Application
                 ],
             ]);
 
-        return new Container($config);
+        return new Container($containerConfig);
     }
 }

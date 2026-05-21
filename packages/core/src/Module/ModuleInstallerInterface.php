@@ -4,11 +4,6 @@ declare(strict_types=1);
 
 namespace Opora\Core\Module;
 
-use Psr\Container\ContainerInterface;
-use Psr\EventDispatcher\EventDispatcherInterface;
-use Psr\Log\LoggerInterface;
-use Symfony\Component\Console\Input\InputInterface;
-
 /**
  * Контракт жизненного цикла модуля.
  *
@@ -42,7 +37,7 @@ interface ModuleInstallerInterface
      * - seed-данные (root-folder, admin-user)
      * - создание маркера установки
      */
-    public function install(InstallContext $ctx): void;
+    public function install(InstallContext $installContext): void;
 
     /**
      * Обновление: вызывается после применения НОВЫХ миграций при bin/opora update.
@@ -51,7 +46,7 @@ interface ModuleInstallerInterface
      * - data-migrations (ON CONFLICT DO NOTHING)
      * - индексы, триггеры
      */
-    public function update(InstallContext $ctx): void;
+    public function update(InstallContext $installContext): void;
 
     /**
      * Абсолютный путь к директории с файлами миграций.

@@ -7,6 +7,7 @@ namespace Opora\Core\Tests\Unit\Module;
 use Opora\Core\Module\InstallContext;
 use Opora\Core\Module\ModuleInstallerInterface;
 use Opora\Core\Module\ModuleRegistry;
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 
@@ -26,7 +27,7 @@ use Psr\Container\ContainerInterface;
  */
 final class ModuleRegistryTest extends TestCase
 {
-    private const INSTALLER_TAG_ID = 'tag@opora.module.installer';
+    private const string INSTALLER_TAG_ID = 'tag@opora.module.installer';
 
     private string $configPath;
 
@@ -53,9 +54,9 @@ final class ModuleRegistryTest extends TestCase
         $container = $this->createMock(ContainerInterface::class);
         $container->method('has')->willReturn(false);
 
-        $registry = new ModuleRegistry($container, $this->configPath);
+        $moduleRegistry = new ModuleRegistry($container, $this->configPath);
 
-        self::assertTrue($registry->isEnabled('core'));
+        self::assertTrue($moduleRegistry->isEnabled('core'));
     }
 
     public function test_isEnabled_returns_false_for_disabled_module(): void
@@ -65,9 +66,9 @@ final class ModuleRegistryTest extends TestCase
         $container = $this->createMock(ContainerInterface::class);
         $container->method('has')->willReturn(false);
 
-        $registry = new ModuleRegistry($container, $this->configPath);
+        $moduleRegistry = new ModuleRegistry($container, $this->configPath);
 
-        self::assertFalse($registry->isEnabled('identity'));
+        self::assertFalse($moduleRegistry->isEnabled('identity'));
     }
 
     public function test_isEnabled_returns_false_for_undefined_module(): void
@@ -77,9 +78,9 @@ final class ModuleRegistryTest extends TestCase
         $container = $this->createMock(ContainerInterface::class);
         $container->method('has')->willReturn(false);
 
-        $registry = new ModuleRegistry($container, $this->configPath);
+        $moduleRegistry = new ModuleRegistry($container, $this->configPath);
 
-        self::assertFalse($registry->isEnabled('nonexistent'));
+        self::assertFalse($moduleRegistry->isEnabled('nonexistent'));
     }
 
     public function test_getEnabled_returns_modules_sorted_by_position(): void
@@ -101,8 +102,8 @@ final class ModuleRegistryTest extends TestCase
             new TestInstallerDummy('identity', 3),
         ]);
 
-        $registry = new ModuleRegistry($container, $this->configPath);
-        $enabled = $registry->getEnabled();
+        $moduleRegistry = new ModuleRegistry($container, $this->configPath);
+        $enabled = $moduleRegistry->getEnabled();
 
         self::assertCount(2, $enabled);
         self::assertSame('core', $enabled[0]->getModuleName());
@@ -122,8 +123,8 @@ final class ModuleRegistryTest extends TestCase
             new TestInstallerDummy('catalog', 4),
         ]);
 
-        $registry = new ModuleRegistry($container, $this->configPath);
-        $enabled = $registry->getEnabled();
+        $moduleRegistry = new ModuleRegistry($container, $this->configPath);
+        $enabled = $moduleRegistry->getEnabled();
 
         self::assertCount(2, $enabled);
         self::assertSame('core', $enabled[0]->getModuleName());
@@ -138,9 +139,9 @@ final class ModuleRegistryTest extends TestCase
             new TestInstallerDummy('core', 1),
         ]);
 
-        $registry = new ModuleRegistry($container, $this->configPath);
+        $moduleRegistry = new ModuleRegistry($container, $this->configPath);
 
-        self::assertTrue($registry->hasInstaller('core'));
+        self::assertTrue($moduleRegistry->hasInstaller('core'));
     }
 
     public function test_hasInstaller_returns_false_when_no_installer(): void
@@ -149,22 +150,22 @@ final class ModuleRegistryTest extends TestCase
 
         $container = $this->createContainerWithInstallers([]);
 
-        $registry = new ModuleRegistry($container, $this->configPath);
+        $moduleRegistry = new ModuleRegistry($container, $this->configPath);
 
-        self::assertFalse($registry->hasInstaller('schema'));
+        self::assertFalse($moduleRegistry->hasInstaller('schema'));
     }
 
     public function test_getInstaller_returns_specific_installer(): void
     {
         $this->writeConfig(['core' => true]);
 
-        $coreInstaller = new TestInstallerDummy('core', 1);
+        $testInstallerDummy = new TestInstallerDummy('core', 1);
 
-        $container = $this->createContainerWithInstallers([$coreInstaller]);
+        $container = $this->createContainerWithInstallers([$testInstallerDummy]);
 
-        $registry = new ModuleRegistry($container, $this->configPath);
+        $moduleRegistry = new ModuleRegistry($container, $this->configPath);
 
-        self::assertSame($coreInstaller, $registry->getInstaller('core'));
+        self::assertSame($testInstallerDummy, $moduleRegistry->getInstaller('core'));
     }
 
     public function test_getInstaller_throws_when_not_found(): void
@@ -173,11 +174,11 @@ final class ModuleRegistryTest extends TestCase
 
         $container = $this->createContainerWithInstallers([]);
 
-        $registry = new ModuleRegistry($container, $this->configPath);
+        $moduleRegistry = new ModuleRegistry($container, $this->configPath);
 
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Installer for module "core" not found');
-        $registry->getInstaller('core');
+        $moduleRegistry->getInstaller('core');
     }
 
     public function test_config_with_core_disabled_throws(): void
@@ -204,7 +205,7 @@ final class ModuleRegistryTest extends TestCase
     /**
      * @param array<int, TestInstallerDummy> $installers
      *
-     * @return ContainerInterface&\PHPUnit\Framework\MockObject\MockObject
+     * @return ContainerInterface&MockObject
      */
     private function createContainerWithInstallers(array $installers): ContainerInterface
     {
@@ -250,11 +251,11 @@ final readonly class TestInstallerDummy implements ModuleInstallerInterface
         return 'test/' . $this->moduleName;
     }
 
-    public function install(InstallContext $ctx): void
+    public function install(InstallContext $installContext): void
     {
     }
 
-    public function update(InstallContext $ctx): void
+    public function update(InstallContext $installContext): void
     {
     }
 

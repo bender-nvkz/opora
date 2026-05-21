@@ -28,7 +28,7 @@ final class ModuleMigrationRunnerTest extends TestCase
 {
     private string $migrationsDir;
 
-    private DatabaseManager $dbal;
+    private DatabaseManager $databaseManager;
 
     private string $testTable;
 
@@ -41,7 +41,7 @@ final class ModuleMigrationRunnerTest extends TestCase
         /** @var non-empty-string $dsn */
         $dsn = 'pgsql:host=postgres;port=5432;dbname=opora';
 
-        $this->dbal = new DatabaseManager(new DatabaseConfig([
+        $this->databaseManager = new DatabaseManager(new DatabaseConfig([
             'default' => 'default',
             'databases' => [
                 'default' => ['connection' => 'postgres'],
@@ -68,7 +68,7 @@ final class ModuleMigrationRunnerTest extends TestCase
     protected function tearDown(): void
     {
         try {
-            $db = $this->dbal->database();
+            $db = $this->databaseManager->database();
             $db->execute('DROP TABLE IF EXISTS "' . $this->testTable . '" CASCADE');
             $db->execute('DROP TABLE IF EXISTS "opora_migration" CASCADE');
         } catch (\Throwable) {
@@ -83,18 +83,18 @@ final class ModuleMigrationRunnerTest extends TestCase
         // Arrange
         $this->createTestMigration();
 
-        $runner = new ModuleMigrationRunner($this->dbal, new NullLogger());
+        $moduleMigrationRunner = new ModuleMigrationRunner($this->databaseManager, new NullLogger());
 
         // Act
-        $runner->run('test', $this->migrationsDir, 'Migration');
+        $moduleMigrationRunner->run('test', $this->migrationsDir, 'Migration');
 
         // Assert — проверяем через direct SQL
-        $result = $this->dbal->database()->query(
+        $statement = $this->databaseManager->database()->query(
             'SELECT table_name FROM information_schema.tables WHERE table_name = ?',
             ['opora_migration'],
         );
 
-        $rows = \iterator_to_array($result);
+        $rows = \iterator_to_array($statement);
         $this->assertCount(1, $rows, 'ModuleMigrationRunner должен создать таблицу трекинга opora_migration');
     }
 
@@ -103,18 +103,18 @@ final class ModuleMigrationRunnerTest extends TestCase
         // Arrange
         $this->createTestMigration();
 
-        $runner = new ModuleMigrationRunner($this->dbal, new NullLogger());
+        $moduleMigrationRunner = new ModuleMigrationRunner($this->databaseManager, new NullLogger());
 
         // Act
-        $runner->run('test', $this->migrationsDir, 'Migration');
+        $moduleMigrationRunner->run('test', $this->migrationsDir, 'Migration');
 
         // Assert — проверяем что миграция создала таблицу
-        $result = $this->dbal->database()->query(
+        $statement = $this->databaseManager->database()->query(
             'SELECT table_name FROM information_schema.tables WHERE table_name = ?',
             [$this->testTable],
         );
 
-        $rows = \iterator_to_array($result);
+        $rows = \iterator_to_array($statement);
         $this->assertCount(1, $rows, 'Миграция должна создать тестовую таблицу');
     }
 
@@ -123,18 +123,18 @@ final class ModuleMigrationRunnerTest extends TestCase
         // Arrange
         $this->createTestMigration();
 
-        $runner = new ModuleMigrationRunner($this->dbal, new NullLogger());
+        $moduleMigrationRunner = new ModuleMigrationRunner($this->databaseManager, new NullLogger());
 
         // Act
-        $runner->run('test', $this->migrationsDir, 'Migration');
+        $moduleMigrationRunner->run('test', $this->migrationsDir, 'Migration');
 
         // Assert — проверяем что миграция записана в трекер
-        $result = $this->dbal->database()->query(
+        $statement = $this->databaseManager->database()->query(
             'SELECT migration, time_executed FROM opora_migration WHERE migration = ?',
             [$this->migrationClassName],
         );
 
-        $rows = \iterator_to_array($result);
+        $rows = \iterator_to_array($statement);
         $this->assertCount(1, $rows, 'Миграция должна быть записана в трекер');
         $this->assertNotNull($rows[0]['time_executed'], 'time_executed должен быть установлен');
     }

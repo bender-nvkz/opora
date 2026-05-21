@@ -12,11 +12,11 @@ use Psr\Log\LoggerInterface;
  *
  * @api
  */
-final class CoreModuleInstaller implements ModuleInstallerInterface
+final readonly class CoreModuleInstaller implements ModuleInstallerInterface
 {
     public function __construct(
-        private readonly DatabaseProviderInterface $dbal,
-        private readonly LoggerInterface $logger,
+        private DatabaseProviderInterface $databaseProvider,
+        private LoggerInterface $logger,
     ) {
     }
 
@@ -45,13 +45,13 @@ final class CoreModuleInstaller implements ModuleInstallerInterface
         return 'Opora\\Core\\Migration';
     }
 
-    public function install(InstallContext $ctx): void
+    public function install(InstallContext $installContext): void
     {
-        $this->seedAdminUser($ctx);
+        $this->seedAdminUser($installContext);
         $this->seedRootFolder();
     }
 
-    public function update(InstallContext $ctx): void
+    public function update(InstallContext $installContext): void
     {
         // TODO: data-migrations при обновлении core
     }
@@ -62,12 +62,12 @@ final class CoreModuleInstaller implements ModuleInstallerInterface
      * Использует --admin-email и --admin-password из InstallContext.
      * ON CONFLICT DO NOTHING — идемпотентность.
      */
-    private function seedAdminUser(InstallContext $ctx): void
+    private function seedAdminUser(InstallContext $installContext): void
     {
         /** @var string|null $email */
-        $email = $ctx->input->getOption('admin-email');
+        $email = $installContext->input->getOption('admin-email');
         /** @var string|null $password */
-        $password = $ctx->input->getOption('admin-password');
+        $password = $installContext->input->getOption('admin-password');
 
         if ($email === null || $password === null) {
             $this->logger->warning('CoreModuleInstaller: admin-email or admin-password not provided, skipping admin user creation.');
@@ -75,9 +75,9 @@ final class CoreModuleInstaller implements ModuleInstallerInterface
             return;
         }
 
-        $db = $this->dbal->database();
+        $database = $this->databaseProvider->database();
 
-        $db->execute(
+        $database->execute(
             'INSERT INTO opora_users (email, password_hash, display_name, is_active, created_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT (email) DO NOTHING',
             [
                 $email,
@@ -100,15 +100,15 @@ final class CoreModuleInstaller implements ModuleInstallerInterface
      */
     private function seedRootFolder(): void
     {
-        $db = $this->dbal->database();
+        $database = $this->databaseProvider->database();
 
         // Получить ID admin-пользователя
-        $result = $db->query(
+        $statement = $database->query(
             'SELECT id FROM opora_users ORDER BY created_at ASC LIMIT 1',
         );
 
         $adminId = null;
-        foreach ($result as $row) {
+        foreach ($statement as $row) {
             $adminId = $row['id'];
         }
 
@@ -119,17 +119,17 @@ final class CoreModuleInstaller implements ModuleInstallerInterface
         }
 
         // Проверить, не создана ли уже корневая папка
-        $exists = $db->query(
+        $exists = $database->query(
             "SELECT 1 FROM opora_folders WHERE path = '1'",
         );
 
-        foreach ($exists as $_) {
+        foreach ($exists as $exist) {
             $this->logger->info('CoreModuleInstaller: root folder already exists, skipping.');
 
             return;
         }
 
-        $db->execute(
+        $database->execute(
             'INSERT INTO opora_folders (name, slug, owner_id, path, position, created_at) VALUES (?, ?, ?, ?, ?, ?)',
             [
                 'Root',

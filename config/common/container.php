@@ -12,8 +12,6 @@ use Yiisoft\Definitions\Reference;
 
 /**
  * DI-контейнер: общие сервисы.
- *
- * @var array{opora-modules: array<non-empty-string, array{position: int, enabled: bool, description: non-empty-string}>} $params Мердж всех params-файлов
  */
 return [
     // Module lifecycle services

@@ -21,5 +21,6 @@ final readonly class InstallContext
         public ContainerInterface $container,
         public LoggerInterface $logger,
         public InputInterface $input,
-    ) {}
+    ) {
+    }
 }

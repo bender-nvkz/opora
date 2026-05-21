@@ -17,7 +17,7 @@ use Yiisoft\Di\Reference\TagReference;
  */
 final class ModuleRegistry
 {
-    private const INSTALLER_TAG = 'opora.module.installer';
+    private const string INSTALLER_TAG = 'opora.module.installer';
 
     /** @var array<string, bool> module_name => enabled */
     private array $modules;
@@ -31,7 +31,7 @@ final class ModuleRegistry
     ) {
         $this->modules = $this->loadConfig();
 
-        if (!isset($this->modules['core']) || $this->modules['core'] !== true) {
+        if (!isset($this->modules['core']) || !$this->modules['core']) {
             throw new \RuntimeException('Module "core" must be enabled');
         }
     }
@@ -45,7 +45,7 @@ final class ModuleRegistry
      */
     public function isEnabled(string $name): bool
     {
-        return isset($this->modules[$name]) && $this->modules[$name] === true;
+        return isset($this->modules[$name]) && $this->modules[$name];
     }
 
     /**
@@ -69,9 +69,7 @@ final class ModuleRegistry
             }
         }
 
-        \usort($result, static function (ModuleInstallerInterface $a, ModuleInstallerInterface $b): int {
-            return $a->getPosition() <=> $b->getPosition();
-        });
+        \usort($result, static fn (ModuleInstallerInterface $a, ModuleInstallerInterface $b): int => $a->getPosition() <=> $b->getPosition());
 
         return $result;
     }
@@ -147,7 +145,6 @@ final class ModuleRegistry
             return [];
         }
 
-        /** @var mixed $tagged */
         $tagged = $this->container->get($tagId);
         $list = \is_array($tagged) ? $tagged : [];
 
