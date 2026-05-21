@@ -9,10 +9,12 @@ use Opora\Core\Http\Middleware\BodyParserMiddleware;
 use Opora\Core\Http\Middleware\CorsMiddleware;
 use Opora\Core\Http\Middleware\ErrorHandlerMiddleware;
 use Opora\Core\Http\Middleware\RequestIdMiddleware;
+use Opora\Core\Http\Middleware\RouterMiddleware;
 use Opora\Core\Http\Middleware\SecurityHeadersMiddleware;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Yiisoft\Definitions\Reference;
+use Yiisoft\Router\Middleware\Router;
 
 /**
  * Middleware-стек: каждый middleware регистрируется с тегом 'opora.middleware'.
@@ -56,6 +58,14 @@ return [
 
     BodyParserMiddleware::class => [
         'class' => BodyParserMiddleware::class,
+        'tags' => ['opora.middleware'],
+    ],
+
+    RouterMiddleware::class => [
+        'class' => RouterMiddleware::class,
+        '__construct()' => [
+            'router' => Reference::to(Router::class),
+        ],
         'tags' => ['opora.middleware'],
     ],
 ];
