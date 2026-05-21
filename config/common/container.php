@@ -10,9 +10,11 @@ use Opora\Core\Module\ModuleMigrationRunner;
 use Opora\Core\Module\ModuleRegistry;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Psr\EventDispatcher\ListenerProviderInterface;
 use Psr\Log\LoggerInterface;
 use Yiisoft\Definitions\Reference;
 use Yiisoft\EventDispatcher\Dispatcher\Dispatcher;
+use Yiisoft\EventDispatcher\Provider\Provider;
 
 /**
  * DI-контейнер: общие сервисы.
@@ -45,6 +47,10 @@ return [
     ],
 
     // Event Bus
+    ListenerProviderInterface::class => [
+        'class' => Provider::class,
+    ],
+
     EventDispatcherInterface::class => [
         'class' => Dispatcher::class,
     ],
