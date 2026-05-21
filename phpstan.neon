@@ -14,7 +14,11 @@ parameters:
         - node_modules (?)
 
     # Игнорируемые паттерны (Yii3-специфика)
-    ignoreErrors: []
+    ignoreErrors:
+        # PHPUnit 13: Assert::* вызывается динамически через $this-> в тестах
+        - message: '#Dynamic call to static method PHPUnit\\Framework\\Assert::#'
+          paths:
+              - packages/*/tests/*
 #    // @todo
 #        # yiisoft/di контейнер — динамическое разрешение зависимостей
 #        - message: '#Call to an undefined method Psr\\Container\\ContainerInterface::#'
@@ -43,7 +47,7 @@ parameters:
     checkExplicitMixedMissingReturn: true
     checkFunctionNameCase: true
     checkInternalClassCaseSensitivity: true
-#    reportUnmatchedIgnoredErrors: true // @todo
+    reportUnmatchedIgnoredErrors: true
     treatPhpDocTypesAsCertain: false
 
     # Дополнительные правила
