@@ -26,7 +26,7 @@ final class RequestIdMiddleware implements MiddlewareInterface
     /**
      * Разрешённые символы в X-Request-Id (защита от header injection).
      */
-    private const ALLOWED_PATTERN = '/[^a-zA-Z0-9\\-._~\\/]/';
+    private const string ALLOWED_PATTERN = '/[^a-zA-Z0-9\\-._~\\/]/';
 
     public static function priority(): int
     {
@@ -50,10 +50,10 @@ final class RequestIdMiddleware implements MiddlewareInterface
     /**
      * Определить request ID: из заголовка или новый UUID v4.
      */
-    private function resolveRequestId(ServerRequestInterface $request): string
+    private function resolveRequestId(ServerRequestInterface $serverRequest): string
     {
-        if ($request->hasHeader('X-Request-Id')) {
-            $headerValue = $request->getHeaderLine('X-Request-Id');
+        if ($serverRequest->hasHeader('X-Request-Id')) {
+            $headerValue = $serverRequest->getHeaderLine('X-Request-Id');
 
             return $this->sanitize($headerValue);
         }

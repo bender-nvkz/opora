@@ -20,7 +20,7 @@ final class AppConfigTest extends TestCase
      */
     public function test_fromEnv_creates_valid_production_config(): void
     {
-        $config = AppConfig::fromEnv([
+        $appConfig = AppConfig::fromEnv([
             'APP_ENV' => 'production',
             'APP_DEBUG' => '0',
             'APP_NAME' => 'Opora',
@@ -31,14 +31,14 @@ final class AppConfigTest extends TestCase
             'OPORA_SCHEMA_WRITABLE' => '0',
         ]);
 
-        self::assertSame('production', $config->appEnv);
-        self::assertFalse($config->debug);
-        self::assertSame('Opora', $config->appName);
-        self::assertSame('1.0.0', $config->appVersion);
-        self::assertSame('Europe/Moscow', $config->appTimezone);
-        self::assertSame('ru', $config->appLocale);
-        self::assertSame('pgsql://user:pass@localhost:5432/db', $config->databaseUrl);
-        self::assertFalse($config->schemaWritable);
+        self::assertSame('production', $appConfig->appEnv);
+        self::assertFalse($appConfig->debug);
+        self::assertSame('Opora', $appConfig->appName);
+        self::assertSame('1.0.0', $appConfig->appVersion);
+        self::assertSame('Europe/Moscow', $appConfig->appTimezone);
+        self::assertSame('ru', $appConfig->appLocale);
+        self::assertSame('pgsql://user:pass@localhost:5432/db', $appConfig->databaseUrl);
+        self::assertFalse($appConfig->schemaWritable);
     }
 
     /**
@@ -75,12 +75,12 @@ final class AppConfigTest extends TestCase
      */
     public function test_fromEnv_defaults_to_production_when_env_empty(): void
     {
-        $config = AppConfig::fromEnv([
+        $appConfig = AppConfig::fromEnv([
             'APP_ENV' => '',
             'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
         ]);
 
-        self::assertSame('production', $config->appEnv);
+        self::assertSame('production', $appConfig->appEnv);
     }
 
     /**
@@ -88,14 +88,14 @@ final class AppConfigTest extends TestCase
      */
     public function test_fromEnv_allows_debug_in_development(): void
     {
-        $config = AppConfig::fromEnv([
+        $appConfig = AppConfig::fromEnv([
             'APP_ENV' => 'development',
             'APP_DEBUG' => '1',
             'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
         ]);
 
-        self::assertTrue($config->debug);
-        self::assertSame('development', $config->appEnv);
+        self::assertTrue($appConfig->debug);
+        self::assertSame('development', $appConfig->appEnv);
     }
 
     /**
@@ -103,7 +103,7 @@ final class AppConfigTest extends TestCase
      */
     public function test_fromEnv_parses_boolean_values_correctly(): void
     {
-        $config = AppConfig::fromEnv([
+        $appConfig = AppConfig::fromEnv([
             'APP_ENV' => 'development',
             'APP_DEBUG' => '1',
             'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
@@ -112,10 +112,10 @@ final class AppConfigTest extends TestCase
             'OPORA_SCHEMA_ALLOW_UGC' => '0',
         ]);
 
-        self::assertTrue($config->debug);
-        self::assertTrue($config->schemaWritable);
-        self::assertTrue($config->schemaAutoSync);
-        self::assertFalse($config->schemaAllowUgc);
+        self::assertTrue($appConfig->debug);
+        self::assertTrue($appConfig->schemaWritable);
+        self::assertTrue($appConfig->schemaAutoSync);
+        self::assertFalse($appConfig->schemaAllowUgc);
     }
 
     /**
@@ -123,7 +123,7 @@ final class AppConfigTest extends TestCase
      */
     public function test_fromEnv_parses_list_values_correctly(): void
     {
-        $config = AppConfig::fromEnv([
+        $appConfig = AppConfig::fromEnv([
             'APP_ENV' => 'development',
             'APP_DEBUG' => '1',
             'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
@@ -131,8 +131,8 @@ final class AppConfigTest extends TestCase
             'SUPPORTED_LOCALES' => 'ru,en,de',
         ]);
 
-        self::assertSame(['https://app.example.com', 'https://admin.example.com'], $config->corsAllowedOrigins);
-        self::assertSame(['ru', 'en', 'de'], $config->supportedLocales);
+        self::assertSame(['https://app.example.com', 'https://admin.example.com'], $appConfig->corsAllowedOrigins);
+        self::assertSame(['ru', 'en', 'de'], $appConfig->supportedLocales);
     }
 
     /**
@@ -140,24 +140,24 @@ final class AppConfigTest extends TestCase
      */
     public function test_fromEnv_uses_defaults_for_optional_fields(): void
     {
-        $config = AppConfig::fromEnv([
+        $appConfig = AppConfig::fromEnv([
             'APP_ENV' => 'development',
             'APP_DEBUG' => '1',
             'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
         ]);
 
-        self::assertSame('Opora', $config->appName);
-        self::assertSame('dev', $config->appVersion);
-        self::assertSame('UTC', $config->appTimezone);
-        self::assertSame('ru', $config->appLocale);
-        self::assertSame(['ru'], $config->supportedLocales);
-        self::assertSame('local', $config->storageAdapter);
-        self::assertSame('db', $config->queueTransport);
-        self::assertSame('pgsql', $config->searchEngine);
-        self::assertSame('file', $config->cacheBackend);
-        self::assertFalse($config->schemaWritable);
-        self::assertFalse($config->schemaAutoSync);
-        self::assertFalse($config->schemaAllowUgc);
-        self::assertSame(['http://localhost:3000'], $config->corsAllowedOrigins);
+        self::assertSame('Opora', $appConfig->appName);
+        self::assertSame('dev', $appConfig->appVersion);
+        self::assertSame('UTC', $appConfig->appTimezone);
+        self::assertSame('ru', $appConfig->appLocale);
+        self::assertSame(['ru'], $appConfig->supportedLocales);
+        self::assertSame('local', $appConfig->storageAdapter);
+        self::assertSame('db', $appConfig->queueTransport);
+        self::assertSame('pgsql', $appConfig->searchEngine);
+        self::assertSame('file', $appConfig->cacheBackend);
+        self::assertFalse($appConfig->schemaWritable);
+        self::assertFalse($appConfig->schemaAutoSync);
+        self::assertFalse($appConfig->schemaAllowUgc);
+        self::assertSame(['http://localhost:3000'], $appConfig->corsAllowedOrigins);
     }
 }

@@ -49,7 +49,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
      */
     public function test_process_returns_500_for_runtime_exception(): void
     {
-        $middleware = new ErrorHandlerMiddleware(
+        $errorHandlerMiddleware = new ErrorHandlerMiddleware(
             $this->createLoggerMock(),
             $this->createResponseFactoryMock(500),
             $this->prodConfig,
@@ -58,7 +58,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
         $request = $this->createMock(ServerRequestInterface::class);
         $handler = $this->createHandlerThatThrows(new \RuntimeException('Internal error'));
 
-        $response = $middleware->process($request, $handler);
+        $response = $errorHandlerMiddleware->process($request, $handler);
 
         self::assertSame(500, $response->getStatusCode());
         self::assertSame('application/json', $response->getHeaderLine('Content-Type'));
@@ -76,7 +76,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
      */
     public function test_process_returns_correct_status_for_http_exception(): void
     {
-        $middleware = new ErrorHandlerMiddleware(
+        $errorHandlerMiddleware = new ErrorHandlerMiddleware(
             $this->createLoggerMock(),
             $this->createResponseFactoryMock(404),
             $this->prodConfig,
@@ -85,7 +85,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
         $request = $this->createMock(ServerRequestInterface::class);
         $handler = $this->createHandlerThatThrows(new HttpException(404, 'Not Found'));
 
-        $response = $middleware->process($request, $handler);
+        $response = $errorHandlerMiddleware->process($request, $handler);
 
         self::assertSame(404, $response->getStatusCode());
         self::assertSame('application/json', $response->getHeaderLine('Content-Type'));
@@ -103,7 +103,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
      */
     public function test_process_returns_403_for_forbidden_exception(): void
     {
-        $middleware = new ErrorHandlerMiddleware(
+        $errorHandlerMiddleware = new ErrorHandlerMiddleware(
             $this->createLoggerMock(),
             $this->createResponseFactoryMock(403),
             $this->prodConfig,
@@ -112,7 +112,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
         $request = $this->createMock(ServerRequestInterface::class);
         $handler = $this->createHandlerThatThrows(new HttpException(403, 'Forbidden'));
 
-        $response = $middleware->process($request, $handler);
+        $response = $errorHandlerMiddleware->process($request, $handler);
 
         self::assertSame(403, $response->getStatusCode());
     }
@@ -122,7 +122,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
      */
     public function test_process_includes_trace_in_debug_mode(): void
     {
-        $middleware = new ErrorHandlerMiddleware(
+        $errorHandlerMiddleware = new ErrorHandlerMiddleware(
             $this->createLoggerMock(),
             $this->createResponseFactoryMock(500),
             $this->devConfig,
@@ -131,7 +131,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
         $request = $this->createMock(ServerRequestInterface::class);
         $handler = $this->createHandlerThatThrows(new \RuntimeException('Test error'));
 
-        $response = $middleware->process($request, $handler);
+        $response = $errorHandlerMiddleware->process($request, $handler);
         $body = (string) $response->getBody();
         $payload = \json_decode($body, true);
 
@@ -145,7 +145,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
      */
     public function test_process_does_not_include_trace_in_production(): void
     {
-        $middleware = new ErrorHandlerMiddleware(
+        $errorHandlerMiddleware = new ErrorHandlerMiddleware(
             $this->createLoggerMock(),
             $this->createResponseFactoryMock(500),
             $this->prodConfig,
@@ -154,7 +154,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
         $request = $this->createMock(ServerRequestInterface::class);
         $handler = $this->createHandlerThatThrows(new \RuntimeException('Test error'));
 
-        $response = $middleware->process($request, $handler);
+        $response = $errorHandlerMiddleware->process($request, $handler);
         $body = (string) $response->getBody();
         $payload = \json_decode($body, true);
 
@@ -167,7 +167,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
      */
     public function test_process_passes_through_response_on_success(): void
     {
-        $middleware = new ErrorHandlerMiddleware(
+        $errorHandlerMiddleware = new ErrorHandlerMiddleware(
             $this->createLoggerMock(),
             $this->createResponseFactoryMock(200),
             $this->prodConfig,
@@ -180,7 +180,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
         $handler = $this->createMock(RequestHandlerInterface::class);
         $handler->method('handle')->willReturn($originalResponse);
 
-        $response = $middleware->process($request, $handler);
+        $response = $errorHandlerMiddleware->process($request, $handler);
 
         self::assertSame($originalResponse, $response);
     }
@@ -195,7 +195,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
             ->method('error')
             ->with(self::stringContains('Unhandled exception'));
 
-        $middleware = new ErrorHandlerMiddleware(
+        $errorHandlerMiddleware = new ErrorHandlerMiddleware(
             $logger,
             $this->createResponseFactoryMock(500),
             $this->prodConfig,
@@ -204,16 +204,16 @@ final class ErrorHandlerMiddlewareTest extends TestCase
         $request = $this->createMock(ServerRequestInterface::class);
         $handler = $this->createHandlerThatThrows(new \RuntimeException('Log me'));
 
-        $middleware->process($request, $handler);
+        $errorHandlerMiddleware->process($request, $handler);
     }
 
     /**
      * @return RequestHandlerInterface&MockObject
      */
-    private function createHandlerThatThrows(\Throwable $exception): RequestHandlerInterface
+    private function createHandlerThatThrows(\Throwable $throwable): RequestHandlerInterface
     {
         $handler = $this->createMock(RequestHandlerInterface::class);
-        $handler->method('handle')->willThrowException($exception);
+        $handler->method('handle')->willThrowException($throwable);
 
         return $handler;
     }
@@ -255,9 +255,7 @@ final class ErrorHandlerMiddlewareTest extends TestCase
         $response->method('getHeaderLine')->willReturn('application/json');
         $response->method('getBody')->willReturn($stream);
         $response->method('withHeader')->willReturnCallback(
-            static function (string $name, mixed $value) use ($response): ResponseInterface {
-                return $response;
-            },
+            static fn (string $name, mixed $value): ResponseInterface => $response,
         );
 
         $factory = $this->createMock(ResponseFactoryInterface::class);

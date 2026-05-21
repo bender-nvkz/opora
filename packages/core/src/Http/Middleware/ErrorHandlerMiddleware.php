@@ -21,12 +21,12 @@ use Psr\Log\LoggerInterface;
  *
  * @api
  */
-final class ErrorHandlerMiddleware implements MiddlewareInterface
+final readonly class ErrorHandlerMiddleware implements MiddlewareInterface
 {
     public function __construct(
-        private readonly LoggerInterface $logger,
-        private readonly ResponseFactoryInterface $responseFactory,
-        private readonly AppConfig $config,
+        private LoggerInterface $logger,
+        private ResponseFactoryInterface $responseFactory,
+        private AppConfig $appConfig,
     ) {
     }
 
@@ -56,15 +56,15 @@ final class ErrorHandlerMiddleware implements MiddlewareInterface
     /**
      * Построить JSON-ответ с ошибкой.
      */
-    private function buildErrorResponse(int $statusCode, string $message, \Throwable $e): ResponseInterface
+    private function buildErrorResponse(int $statusCode, string $message, \Throwable $throwable): ResponseInterface
     {
         $payload = [
             'error' => $message,
             'code' => $statusCode,
         ];
 
-        if ($this->config->debug) {
-            $payload['trace'] = \explode("\n", $e->getTraceAsString());
+        if ($this->appConfig->debug) {
+            $payload['trace'] = \explode("\n", $throwable->getTraceAsString());
         }
 
         $body = \json_encode($payload, \JSON_UNESCAPED_UNICODE | \JSON_UNESCAPED_SLASHES);

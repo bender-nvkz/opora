@@ -34,13 +34,6 @@ final class AppConfig
     }
 
     /**
-     * Режим отладки (запрещён на production).
-     */
-    public bool $debug {
-        get => $this->debug;
-    }
-
-    /**
      * Версия приложения (injected CI).
      *
      * @var non-empty-string
@@ -77,72 +70,6 @@ final class AppConfig
     }
 
     /**
-     * DSN для подключения к БД.
-     *
-     * @var non-empty-string
-     */
-    public string $databaseUrl {
-        get => $this->databaseUrl;
-    }
-
-    /**
-     * Адаптер хранилища: local | s3.
-     *
-     * @var non-empty-string
-     */
-    public string $storageAdapter {
-        get => $this->storageAdapter;
-    }
-
-    /**
-     * Транспорт очередей: db | redis.
-     *
-     * @var non-empty-string
-     */
-    public string $queueTransport {
-        get => $this->queueTransport;
-    }
-
-    /**
-     * Поисковый движок: pgsql | meilisearch.
-     *
-     * @var non-empty-string
-     */
-    public string $searchEngine {
-        get => $this->searchEngine;
-    }
-
-    /**
-     * Бэкенд кэша: file | db.
-     *
-     * @var non-empty-string
-     */
-    public string $cacheBackend {
-        get => $this->cacheBackend;
-    }
-
-    /**
-     * Разрешить UI-редактор схем (OPORA_SCHEMA_WRITABLE).
-     */
-    public bool $schemaWritable {
-        get => $this->schemaWritable;
-    }
-
-    /**
-     * Автосинк схемы на каждый запрос (только dev).
-     */
-    public bool $schemaAutoSync {
-        get => $this->schemaAutoSync;
-    }
-
-    /**
-     * Разрешить UGC-классы.
-     */
-    public bool $schemaAllowUgc {
-        get => $this->schemaAllowUgc;
-    }
-
-    /**
      * Разрешённые CORS-origins.
      *
      * @var list<string>
@@ -158,46 +85,72 @@ final class AppConfig
     public function __construct(
         string $appName = 'Opora',
         string $appEnv = 'production',
-        bool $debug = false,
+        /**
+         * Режим отладки (запрещён на production).
+         */
+        public bool $debug = false {
+            get => $this->debug;
+        },
         string $appVersion = 'dev',
         string $appTimezone = 'UTC',
         string $appLocale = 'ru',
         array $supportedLocales = ['ru'],
-        string $databaseUrl = '',
-        string $storageAdapter = 'local',
-        string $queueTransport = 'db',
-        string $searchEngine = 'pgsql',
-        string $cacheBackend = 'file',
-        bool $schemaWritable = false,
-        bool $schemaAutoSync = false,
-        bool $schemaAllowUgc = false,
+        /**
+         * DSN для подключения к БД.
+         */
+        public string $databaseUrl = '' {
+            get => $this->databaseUrl;
+        },
+        /**
+         * Адаптер хранилища: local | s3.
+         */
+        public string $storageAdapter = 'local' {
+            get => $this->storageAdapter;
+        },
+        /**
+         * Транспорт очередей: db | redis.
+         */
+        public string $queueTransport = 'db' {
+            get => $this->queueTransport;
+        },
+        /**
+         * Поисковый движок: pgsql | meilisearch.
+         */
+        public string $searchEngine = 'pgsql' {
+            get => $this->searchEngine;
+        },
+        /**
+         * Бэкенд кэша: file | db.
+         */
+        public string $cacheBackend = 'file' {
+            get => $this->cacheBackend;
+        },
+        /**
+         * Разрешить UI-редактор схем (OPORA_SCHEMA_WRITABLE).
+         */
+        public bool $schemaWritable = false {
+            get => $this->schemaWritable;
+        },
+        /**
+         * Автосинк схемы на каждый запрос (только dev).
+         */
+        public bool $schemaAutoSync = false {
+            get => $this->schemaAutoSync;
+        },
+        /**
+         * Разрешить UGC-классы.
+         */
+        public bool $schemaAllowUgc = false {
+            get => $this->schemaAllowUgc;
+        },
         array $corsAllowedOrigins = ['http://localhost:3000'],
     ) {
         $this->appName = $appName !== '' ? $appName : 'Opora';
         $this->appEnv = $appEnv !== '' ? $appEnv : 'production';
-        $this->debug = $debug;
         $this->appVersion = $appVersion !== '' ? $appVersion : 'dev';
         $this->appTimezone = $appTimezone !== '' ? $appTimezone : 'UTC';
         $this->appLocale = $appLocale !== '' ? $appLocale : 'ru';
-        /** @var non-empty-string $databaseUrl */
-        $databaseUrl = $databaseUrl;
-        /** @var non-empty-string $storageAdapter */
-        $storageAdapter = $storageAdapter;
-        /** @var non-empty-string $queueTransport */
-        $queueTransport = $queueTransport;
-        /** @var non-empty-string $searchEngine */
-        $searchEngine = $searchEngine;
-        /** @var non-empty-string $cacheBackend */
-        $cacheBackend = $cacheBackend;
         $this->supportedLocales = \array_values($supportedLocales);
-        $this->databaseUrl = $databaseUrl;
-        $this->storageAdapter = $storageAdapter;
-        $this->queueTransport = $queueTransport;
-        $this->searchEngine = $searchEngine;
-        $this->cacheBackend = $cacheBackend;
-        $this->schemaWritable = $schemaWritable;
-        $this->schemaAutoSync = $schemaAutoSync;
-        $this->schemaAllowUgc = $schemaAllowUgc;
         $this->corsAllowedOrigins = \array_values($corsAllowedOrigins);
     }
 
@@ -293,7 +246,7 @@ final class AppConfig
         }
 
         /** @var list<string> $items */
-        $items = \array_map('trim', \explode(',', (string) $value));
+        $items = \array_map(trim(...), \explode(',', (string) $value));
 
         return \array_values(\array_filter($items, static fn (string $item): bool => $item !== ''));
     }

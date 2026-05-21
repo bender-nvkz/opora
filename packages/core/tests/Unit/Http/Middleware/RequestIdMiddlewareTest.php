@@ -25,7 +25,7 @@ final class RequestIdMiddlewareTest extends TestCase
      */
     public function test_process_generates_uuid_when_header_missing(): void
     {
-        $middleware = new RequestIdMiddleware();
+        $requestIdMiddleware = new RequestIdMiddleware();
 
         /** @var string|null $capturedAttribute */
         $capturedAttribute = null;
@@ -37,7 +37,7 @@ final class RequestIdMiddlewareTest extends TestCase
 
         $handler = $this->createHandlerReturning($response);
 
-        $result = $middleware->process($request, $handler);
+        $result = $requestIdMiddleware->process($request, $handler);
 
         self::assertSame($response, $result);
         self::assertNotNull($capturedAttribute);
@@ -51,7 +51,7 @@ final class RequestIdMiddlewareTest extends TestCase
      */
     public function test_process_uses_existing_header_when_present(): void
     {
-        $middleware = new RequestIdMiddleware();
+        $requestIdMiddleware = new RequestIdMiddleware();
 
         $requestId = 'a1b2c3d4-e5f6-4789-abc1-2d3e4f5a6b7c';
 
@@ -65,7 +65,7 @@ final class RequestIdMiddlewareTest extends TestCase
 
         $handler = $this->createHandlerReturning($response);
 
-        $result = $middleware->process($request, $handler);
+        $result = $requestIdMiddleware->process($request, $handler);
 
         self::assertSame($response, $result);
         self::assertSame($requestId, $capturedAttribute);
@@ -77,7 +77,7 @@ final class RequestIdMiddlewareTest extends TestCase
      */
     public function test_process_sets_request_attribute(): void
     {
-        $middleware = new RequestIdMiddleware();
+        $requestIdMiddleware = new RequestIdMiddleware();
 
         /** @var string|null $capturedAttribute */
         $capturedAttribute = null;
@@ -89,7 +89,7 @@ final class RequestIdMiddlewareTest extends TestCase
 
         $handler = $this->createHandlerReturning($response);
 
-        $middleware->process($request, $handler);
+        $requestIdMiddleware->process($request, $handler);
 
         self::assertNotNull($capturedAttribute);
         self::assertMatchesRegularExpression(self::UUID_REGEX, $capturedAttribute);
@@ -100,7 +100,7 @@ final class RequestIdMiddlewareTest extends TestCase
      */
     public function test_process_sets_response_header(): void
     {
-        $middleware = new RequestIdMiddleware();
+        $requestIdMiddleware = new RequestIdMiddleware();
 
         /** @var string|null $capturedAttribute */
         $capturedAttribute = null;
@@ -112,7 +112,7 @@ final class RequestIdMiddlewareTest extends TestCase
 
         $handler = $this->createHandlerReturning($response);
 
-        $middleware->process($request, $handler);
+        $requestIdMiddleware->process($request, $handler);
 
         self::assertNotNull($capturedHeader);
         self::assertMatchesRegularExpression(self::UUID_REGEX, $capturedHeader);
@@ -123,7 +123,7 @@ final class RequestIdMiddlewareTest extends TestCase
      */
     public function test_process_sanitizes_invalid_request_id(): void
     {
-        $middleware = new RequestIdMiddleware();
+        $requestIdMiddleware = new RequestIdMiddleware();
 
         // client sends X-Request-Id с инъекцией заголовков
         $maliciousId = "valid-part\nX-Injected: malicious";
@@ -138,7 +138,7 @@ final class RequestIdMiddlewareTest extends TestCase
 
         $handler = $this->createHandlerReturning($response);
 
-        $middleware->process($request, $handler);
+        $requestIdMiddleware->process($request, $handler);
 
         // санитизированное значение содержит только допустимые символы
         self::assertNotNull($capturedAttribute);
