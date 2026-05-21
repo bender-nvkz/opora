@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use Cycle\Database\DatabaseProviderInterface;
+use Opora\Core\Health\DatabaseHealthCheck;
+use Opora\Core\Http\HealthController;
 use Opora\Core\Http\MiddlewarePipeline;
 use Opora\Core\Http\NotFoundHandler;
 use Psr\Container\ContainerInterface;
@@ -30,7 +33,8 @@ use Yiisoft\Router\UrlMatcherInterface;
  *
  * === yiisoft/router wiring ===
  * RouteCollector → RouteCollection → UrlMatcher → Yiisoft Router Middleware.
- * Маршруты регистрируются в config/routes/api.php (Шаг 9: HealthController).
+ * Маршруты регистрируются в config/web/routes.php (callable, обрабатывается
+ * в Application::run()).
  * До этого момента роутер возвращает 404 для всех запросов —
  * обрабатывается NotFoundHandler.
  */
@@ -99,6 +103,26 @@ return [
             'responseFactory' => Reference::to(ResponseFactoryInterface::class),
             'middlewareFactory' => Reference::to(MiddlewareFactory::class),
             'currentRoute' => Reference::to(CurrentRoute::class),
+        ],
+    ],
+
+    // === Health Check ===
+
+    // DatabaseHealthCheck — проверка доступности БД
+    DatabaseHealthCheck::class => [
+        'class' => DatabaseHealthCheck::class,
+        '__construct()' => [
+            'dbal' => Reference::to(DatabaseProviderInterface::class),
+        ],
+        'tags' => ['opora.health.check'],
+    ],
+
+    // HealthController — собирает все проверки и возвращает JSON
+    HealthController::class => [
+        'class' => HealthController::class,
+        '__construct()' => [
+            'checks' => TagReference::to('opora.health.check'),
+            'responseFactory' => Reference::to(ResponseFactoryInterface::class),
         ],
     ],
 ];
