@@ -18,6 +18,17 @@ return RectorConfig::configure()
         __DIR__ . '/node_modules',
         // Не трогать Schema definitions — они намеренно многословны
         __DIR__ . '/config/schema',
+        // MiddlewarePipeline: $finalHandler и $next — семантически верные PSR-15 имена,
+        // RenameParamToMatchTypeRector ломает named arguments (finalHandler:)
+        \Rector\Naming\Rector\ClassMethod\RenameParamToMatchTypeRector::class => [
+            __DIR__ . '/packages/core/src/Http/MiddlewarePipeline.php',
+        ],
+        \Rector\Naming\Rector\Class_\RenamePropertyToMatchTypeRector::class => [
+            __DIR__ . '/packages/core/src/Http/MiddlewarePipeline.php',
+        ],
+        \Rector\Naming\Rector\Assign\RenameVariableToMatchMethodCallReturnTypeRector::class => [
+            __DIR__ . '/packages/core/src/Http/MiddlewarePipeline.php',
+        ],
     ])
 
     // PHP 8.4 — целевая версия

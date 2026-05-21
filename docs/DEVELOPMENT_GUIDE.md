@@ -275,6 +275,54 @@ type inference.
 
 ---
 
+## Yii3 DI: tagged dependencies
+
+Для регистрации middleware (и любых других коллекций сервисов с порядком) используется
+механизм тегов Yii3 DI:
+
+### Регистрация сервиса с тегом
+
+```php
+// config/web/middleware.php
+use Yiisoft\Definitions\Reference;
+
+return [
+    MyMiddleware::class => [
+        'class' => MyMiddleware::class,
+        '__construct()' => [/* ... */],
+        'tags' => ['opora.middleware'],
+    ],
+];
+```
+
+### Получение всех сервисов с тегом
+
+```php
+// config/web/container.php
+use Yiisoft\Di\Reference\TagReference;
+
+return [
+    MyPipeline::class => [
+        'class' => MyPipeline::class,
+        '__construct()' => [
+            'items' => TagReference::to('opora.middleware'),
+            // Внутри создаёт Reference::to('tag@opora.middleware')
+        ],
+    ],
+];
+```
+
+### Важно
+
+- **Используй `TagReference::to('tag-name')`** — это правильный API.
+- **НЕ используй `Reference::tagged()`** — метод отсутствует в `yiisoft/definitions` v3.4.
+- `TagReference::to()` возвращает `Reference`, который DI-контейнер разрешает
+  в `iterable` всех сервисов с указанным тегом.
+- Тип параметра конструктора — `iterable`, не `array`, чтобы контейнер мог
+  передать lazy iterator без материализации всех сервисов сразу.
+
+---
+
 ## ADR Index
 
 | ID | Название | Статус | Кратко |
