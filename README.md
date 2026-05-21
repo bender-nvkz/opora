@@ -91,9 +91,15 @@ opora/
 │   └── admin/            ← React SPA
 ├── frontend/             ← npm-пакеты (@opora/design-tokens, @opora/ui, @opora/api-client)
 ├── config/
-│   └── schema/           ← Schema-as-Code: классы, workflow, permissions
-└── docs/
-    └── architecture/decisions/ ← ADR-каталог
+│   ├── schema/classes/       ← ClassDefinition (PHP-файлы)
+│   ├── schema/workflows/     ← WorkflowDefinition
+│   └── schema/permissions/   ← PermissionDefinition
+├── docs/
+│   └── architecture/decisions/ ← ADR-000 … ADR-NNN
+└── tests/
+    ├── Unit/             ← Unit-тесты (Domain, App)
+    ├── Integration/      ← Интеграционные тесты (Infrastructure)
+    └── Functional/       ← Функциональные тесты (HTTP endpoints)
 ```
 
 ### Стек
@@ -108,6 +114,7 @@ opora/
 | **Frontend** | React 18, TypeScript 5, TanStack Router/Query/Table/Virtual, Radix UI + shadcn/ui, Tailwind CSS 4 |
 | **AI** | MCP Server (modelcontextprotocol/php-sdk), EmbeddingProviderInterface |
 | **Тесты** | PHPUnit 11 + Pest 3, Behat, Vitest + Playwright |
+| **Стратегия тестов** | Стратифицированный TDD — см. [ADR-006](docs/architecture/decisions/ADR-006-testing-strategy.md) |
 | **Качество** | PHPStan level 8, Rector 2.x, PHP CS Fixer |
 
 ---
@@ -127,6 +134,9 @@ make migrate
 # Применить Schema-as-Code
 make schema-sync
 
+# Проверить что всё работает
+make test
+
 # Запустить frontend dev server
 make dev
 ```
@@ -143,6 +153,9 @@ make dev
 - [ADR-001: Выбор Yii3](docs/architecture/decisions/ADR-001-choose-yii3.md)
 - [ADR-002: Выбор Cycle ORM 2](docs/architecture/decisions/ADR-002-choose-cycle-orm2.md)
 - [ADR-003: Структура репозиториев](docs/architecture/decisions/ADR-003-repository-structure.md)
+- [ADR-004: Префиксы таблиц и миграции](docs/architecture/decisions/ADR-004-table-prefix-and-migration-convention.md)
+- [ADR-005: Module Lifecycle Contract](docs/architecture/decisions/ADR-005-module-lifecycle-contract.md)
+- [ADR-006: Стратегия тестирования](docs/architecture/decisions/ADR-006-testing-strategy.md)
 
 Полное руководство по разработке: [`docs/DEVELOPMENT_GUIDE.md`](docs/DEVELOPMENT_GUIDE.md).
 
