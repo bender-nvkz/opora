@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use Opora\Core\Config\AppConfig;
 use Opora\Core\Config\CorsConfig;
+use Opora\Core\Config\SecurityHeadersConfig;
+use Opora\Core\Http\Middleware\BodyParserMiddleware;
 use Opora\Core\Http\Middleware\CorsMiddleware;
 use Opora\Core\Http\Middleware\ErrorHandlerMiddleware;
 use Opora\Core\Http\Middleware\RequestIdMiddleware;
+use Opora\Core\Http\Middleware\SecurityHeadersMiddleware;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Yiisoft\Definitions\Reference;
@@ -40,6 +43,19 @@ return [
         '__construct()' => [
             'config' => Reference::to(CorsConfig::class),
         ],
+        'tags' => ['opora.middleware'],
+    ],
+
+    SecurityHeadersMiddleware::class => [
+        'class' => SecurityHeadersMiddleware::class,
+        '__construct()' => [
+            'config' => Reference::to(SecurityHeadersConfig::class),
+        ],
+        'tags' => ['opora.middleware'],
+    ],
+
+    BodyParserMiddleware::class => [
+        'class' => BodyParserMiddleware::class,
         'tags' => ['opora.middleware'],
     ],
 ];
