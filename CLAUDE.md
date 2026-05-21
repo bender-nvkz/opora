@@ -109,6 +109,72 @@ Drift между spec и кодом в CI = блок merge. Добавил endpo
 Inline SQL, FK-ссылки, репозитории используют полное префиксированное имя.
 Новый модуль получает новый префикс. Нарушение = блок merge.
 
+## Стандарты тестирования
+
+### Стратификация
+
+Разные слои архитектуры тестируются разными подходами (ADR-006):
+
+| Слой | Подход | Тип теста | Порядок |
+|------|--------|-----------|---------|
+| `src/Domain/` | Строгий TDD | Unit, без моков на конкретные классы | Тест → реализация |
+| `src/App/` | Specification-first | Unit, моки на интерфейсы | AI пишет тест → подтверждение → реализация |
+| `src/Infrastructure/` | Implementation-first | Integration, реальная тестовая БД | Реализация → интеграционный тест |
+
+### Расположение тестов
+
+Тесты лежат рядом с кодом зеркально структуре `src/`:
+
+```
+packages/core/src/Folder/FolderService.php
+packages/core/tests/Unit/Folder/FolderServiceTest.php
+
+packages/core/src/Module/ModuleRegistry.php
+packages/core/tests/Unit/Module/ModuleRegistryTest.php
+```
+
+### Обязательный охват для каждого среза
+
+1. Все **инварианты из спеки** — каждый инвариант покрыт тестом
+2. Все **граничные случаи** (slug конфликт, превышение глубины, disabled пользователь)
+3. **Happy path** — основной сценарий использования
+
+### Именование тестов
+
+Формат: `test_[что_тестируем]_[при_каком_условии]_[ожидаемый_результат]`
+
+```php
+// ✅ Правильно
+public function test_create_folder_throws_when_slug_conflicts(): void
+public function test_config_raises_exception_when_debug_enabled_in_production(): void
+
+// ❌ Неправильно
+public function testCreate(): void
+public function test1(): void
+```
+
+### Запрещено в тестах
+
+- `@runInSeparateProcess` без явной причины
+- Тесты с `sleep()` или `usleep()`
+- Прямые SQL-запросы в unit-тестах (только в integration)
+- Моки на конкретные классы — только на интерфейсы
+- `@covers` аннотации без реального кода
+- Магические числа без пояснения
+
+### Запуск
+
+```bash
+make test              # все тесты
+make test-unit         # только unit
+make test-integration  # только integration
+make test-filter=ИмяТеста  # один тестовый класс
+make ci                # cs-check + stan + rector-check + test
+make stan              # PHPStan level 8
+```
+
+---
+
 ## Чего НЕ делать
 
 - НЕ импортировать Yii/Cycle в `src/Domain/`
@@ -142,6 +208,7 @@ make up-tools     # pgAdmin (5050) + Mailpit (8025)
 - ADR-003: `docs/architecture/decisions/ADR-003-repository-structure.md`
 - ADR-004: `docs/architecture/decisions/ADR-004-table-prefix-and-migration-convention.md`
 - ADR-005: `docs/architecture/decisions/ADR-005-module-lifecycle-contract.md`
+- ADR-006: `docs/architecture/decisions/ADR-006-testing-strategy.md`
 
 При любом архитектурном изменении — предложи создать новый ADR.
 PR без ADR при архитектурном изменении отклоняется на ревью.

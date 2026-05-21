@@ -159,7 +159,10 @@ Closes #NNN
 
 ## Чеклист
 - [ ] `make ci` пройден без ошибок
-- [ ] Тесты написаны/обновлены для новой функциональности
+- [ ] Новый код в `src/Domain/` — есть unit-тест, написанный до реализации
+- [ ] Новый код в `src/App/` — есть тест, фиксирующий контракт
+- [ ] Новый код в `src/Infrastructure/` — есть интеграционный тест
+- [ ] Инварианты из спеки покрыты тестами
 - [ ] PHPStan level 8 — 0 ошибок
 - [ ] CLAUDE.md обновлён (если нужно)
 - [ ] ADR создан (если архитектурное изменение)
@@ -190,18 +193,90 @@ Closes #NNN
 - API-ответы — только через `object_read`, никогда через `object_values`
 - Репозитории в Domain — только интерфейсы; реализации — в Infrastructure
 
-### Тесты
+### TDD — стратифицированный подход
 
-- Unit-тесты для Domain-слоя — **обязательны**
-- Integration-тесты для Infrastructure — желательны
-- Functional-тесты для HTTP endpoints — для критических путей
-- Покрытие нового кода ≥ 80%
-- Тесты живут рядом с кодом: `tests/Unit/`, `tests/Integration/`, `tests/Functional/`
+Мы используем **стратифицированный TDD** (см. ADR-006). Разные слои архитектуры
+тестируются разными подходами:
+
+**Domain layer (`src/Domain/`):** строгий TDD. Тест пишется до кода.
+Тест — это спецификация поведения, а не документация. Если ты не можешь
+написать тест до кода — скорее всего интерфейс недостаточно продуман.
+
+```php
+// Сначала тест — фиксируем контракт
+final class FolderServiceTest extends TestCase
+{
+    public function test_create_throws_when_slug_conflicts(): void
+    {
+        $repo = $this->createMock(FolderRepositoryInterface::class);
+        $repo->method('findBySlugAndParent')->willReturn(new Folder(/* ... */));
+
+        $service = new FolderService($repo, $this->createMock(EventBusInterface::class));
+
+        $this->expectException(SlugConflictException::class);
+        $service->create(new CreateFolderCommand(parentId: 1, name: 'Test', slug: 'existing', ownerId: 1));
+    }
+}
+// Только после того как тест написан — реализуем FolderService
+```
+
+**Application layer (`src/App/`):** specification-first. Перед реализацией
+хендлера — опиши тест ("при команде X хендлер вызывает Y и публикует Z").
+Зафиксируй тест. Потом реализуй. Паттерн: AI пишет тест → ты читаешь и
+подтверждаешь → AI реализует.
+
+**Infrastructure layer (`src/Infrastructure/`):** implementation-first.
+Интеграционный тест после реализации. Mock-free: тестируем с реальной БД
+(тестовый контейнер).
+
+### Именование тестов
+
+Формат: `test_[что_тестируем]_[при_каком_условии]_[ожидаемый_результат]`
+
+```php
+// ✅ Правильно
+public function test_create_folder_throws_when_slug_conflicts(): void
+public function test_config_raises_exception_when_debug_enabled_in_production(): void
+
+// ❌ Неправильно
+public function testCreate(): void
+public function test1(): void
+```
+
+### Расположение тестов
+
+Тесты лежат рядом с кодом зеркально структуре `src/`:
+
+```
+packages/core/src/Folder/FolderService.php
+packages/core/tests/Unit/Folder/FolderServiceTest.php
+```
+
+### Обязательный охват
+
+Для каждого среза разработки:
+1. Все **инварианты из спеки** — каждый инвариант покрыт тестом
+2. Все **граничные случаи** (slug конфликт, превышение глубины, disabled пользователь)
+3. **Happy path** — основной сценарий использования
+
+### Запрещённые паттерны в тестах
+
+- `@runInSeparateProcess` без явной причины и комментария
+- Тесты с `sleep()` или `usleep()`
+- Прямые SQL-запросы в unit-тестах (только в integration)
+- Моки на конкретные классы — только на интерфейсы
+- `@covers` аннотации без реального кода
+- Магические числа без пояснения
+
+### Запуск
 
 ```bash
 make test              # все тесты
 make test-unit         # только unit
 make test-integration  # только integration
+make test-filter=ИмяТеста  # один тестовый класс
+make ci                # cs-check + stan + rector-check + test
+make stan              # PHPStan level 8
 ```
 
 ### Frontend (React/TypeScript)
