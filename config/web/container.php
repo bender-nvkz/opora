@@ -13,10 +13,10 @@ use Yiisoft\Middleware\Dispatcher\MiddlewareFactory;
 use Yiisoft\Router\CurrentRoute;
 use Yiisoft\Router\FastRoute\UrlMatcher;
 use Yiisoft\Router\Middleware\Router;
-use Yiisoft\Router\RouteCollector;
-use Yiisoft\Router\RouteCollectorInterface;
 use Yiisoft\Router\RouteCollection;
 use Yiisoft\Router\RouteCollectionInterface;
+use Yiisoft\Router\RouteCollector;
+use Yiisoft\Router\RouteCollectorInterface;
 use Yiisoft\Router\UrlMatcherInterface;
 
 /**

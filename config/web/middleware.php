@@ -9,6 +9,7 @@ use Opora\Core\Http\Middleware\BodyParserMiddleware;
 use Opora\Core\Http\Middleware\CorsMiddleware;
 use Opora\Core\Http\Middleware\ErrorHandlerMiddleware;
 use Opora\Core\Http\Middleware\RequestIdMiddleware;
+use Opora\Core\Http\Middleware\RequestLoggingMiddleware;
 use Opora\Core\Http\Middleware\RouterMiddleware;
 use Opora\Core\Http\Middleware\SecurityHeadersMiddleware;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -37,6 +38,11 @@ return [
 
     RequestIdMiddleware::class => [
         'class' => RequestIdMiddleware::class,
+        'tags' => ['opora.middleware'],
+    ],
+
+    RequestLoggingMiddleware::class => [
+        'class' => RequestLoggingMiddleware::class,
         'tags' => ['opora.middleware'],
     ],
 
