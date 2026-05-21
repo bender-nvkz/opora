@@ -34,13 +34,13 @@ final class ErrorHandlerMiddlewareTest extends TestCase
         $this->prodConfig = AppConfig::fromEnv([
             'APP_ENV' => 'production',
             'APP_DEBUG' => '0',
-            'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
+            'DB_DSN' => 'pgsql://user:pass@localhost:5432/db',
         ]);
 
         $this->devConfig = AppConfig::fromEnv([
             'APP_ENV' => 'development',
             'APP_DEBUG' => '1',
-            'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
+            'DB_DSN' => 'pgsql://user:pass@localhost:5432/db',
         ]);
     }
 

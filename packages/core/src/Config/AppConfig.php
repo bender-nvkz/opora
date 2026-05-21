@@ -98,8 +98,8 @@ final class AppConfig
         /**
          * DSN для подключения к БД.
          */
-        public string $databaseUrl = '' {
-            get => $this->databaseUrl;
+        public string $dbDsn = '' {
+            get => $this->dbDsn;
         },
         /**
          * Адаптер хранилища: local | s3.
@@ -171,11 +171,11 @@ final class AppConfig
             throw new ConfigurationException('APP_DEBUG=true is not allowed in production environment');
         }
 
-        $databaseUrl = self::envString($source, 'DATABASE_URL', '');
+        $dbDsn = self::envString($source, 'DB_DSN', '');
 
-        // DATABASE_URL обязателен для всех окружений
-        if ($databaseUrl === '') {
-            throw new ConfigurationException('DATABASE_URL is required');
+        // DB_DSN обязателен для всех окружений
+        if ($dbDsn === '') {
+            throw new ConfigurationException('DB_DSN is required (set DB_DSN in .env or compose.yaml)');
         }
 
         return new self(
@@ -186,7 +186,7 @@ final class AppConfig
             appTimezone: self::envString($source, 'APP_TIMEZONE', 'UTC'),
             appLocale: self::envString($source, 'APP_LOCALE', 'ru'),
             supportedLocales: self::envList($source, 'SUPPORTED_LOCALES', ['ru']),
-            databaseUrl: $databaseUrl,
+            dbDsn: $dbDsn,
             storageAdapter: self::envString($source, 'STORAGE_ADAPTER', 'local'),
             queueTransport: self::envString($source, 'QUEUE_TRANSPORT', 'db'),
             searchEngine: self::envString($source, 'SEARCH_ENGINE', 'pgsql'),

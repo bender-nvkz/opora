@@ -27,7 +27,7 @@ final class AppConfigTest extends TestCase
             'APP_VERSION' => '1.0.0',
             'APP_TIMEZONE' => 'Europe/Moscow',
             'APP_LOCALE' => 'ru',
-            'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
+            'DB_DSN' => 'pgsql://user:pass@localhost:5432/db',
             'OPORA_SCHEMA_WRITABLE' => '0',
         ]);
 
@@ -37,7 +37,7 @@ final class AppConfigTest extends TestCase
         self::assertSame('1.0.0', $appConfig->appVersion);
         self::assertSame('Europe/Moscow', $appConfig->appTimezone);
         self::assertSame('ru', $appConfig->appLocale);
-        self::assertSame('pgsql://user:pass@localhost:5432/db', $appConfig->databaseUrl);
+        self::assertSame('pgsql://user:pass@localhost:5432/db', $appConfig->dbDsn);
         self::assertFalse($appConfig->schemaWritable);
     }
 
@@ -52,17 +52,17 @@ final class AppConfigTest extends TestCase
         AppConfig::fromEnv([
             'APP_ENV' => 'production',
             'APP_DEBUG' => '1',
-            'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
+            'DB_DSN' => 'pgsql://user:pass@localhost:5432/db',
         ]);
     }
 
     /**
-     * DATABASE_URL обязателен для всех окружений.
+     * DB_DSN обязателен для всех окружений.
      */
-    public function test_fromEnv_throws_when_database_url_missing(): void
+    public function test_fromEnv_throws_when_db_dsn_missing(): void
     {
         $this->expectException(ConfigurationException::class);
-        $this->expectExceptionMessage('DATABASE_URL is required');
+        $this->expectExceptionMessage('DB_DSN is required');
 
         AppConfig::fromEnv([
             'APP_ENV' => 'development',
@@ -77,7 +77,7 @@ final class AppConfigTest extends TestCase
     {
         $appConfig = AppConfig::fromEnv([
             'APP_ENV' => '',
-            'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
+            'DB_DSN' => 'pgsql://user:pass@localhost:5432/db',
         ]);
 
         self::assertSame('production', $appConfig->appEnv);
@@ -91,7 +91,7 @@ final class AppConfigTest extends TestCase
         $appConfig = AppConfig::fromEnv([
             'APP_ENV' => 'development',
             'APP_DEBUG' => '1',
-            'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
+            'DB_DSN' => 'pgsql://user:pass@localhost:5432/db',
         ]);
 
         self::assertTrue($appConfig->debug);
@@ -106,7 +106,7 @@ final class AppConfigTest extends TestCase
         $appConfig = AppConfig::fromEnv([
             'APP_ENV' => 'development',
             'APP_DEBUG' => '1',
-            'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
+            'DB_DSN' => 'pgsql://user:pass@localhost:5432/db',
             'OPORA_SCHEMA_WRITABLE' => 'true',
             'OPORA_SCHEMA_AUTOSYNC' => 'yes',
             'OPORA_SCHEMA_ALLOW_UGC' => '0',
@@ -126,7 +126,7 @@ final class AppConfigTest extends TestCase
         $appConfig = AppConfig::fromEnv([
             'APP_ENV' => 'development',
             'APP_DEBUG' => '1',
-            'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
+            'DB_DSN' => 'pgsql://user:pass@localhost:5432/db',
             'CORS_ALLOWED_ORIGINS' => 'https://app.example.com,https://admin.example.com',
             'SUPPORTED_LOCALES' => 'ru,en,de',
         ]);
@@ -143,7 +143,7 @@ final class AppConfigTest extends TestCase
         $appConfig = AppConfig::fromEnv([
             'APP_ENV' => 'development',
             'APP_DEBUG' => '1',
-            'DATABASE_URL' => 'pgsql://user:pass@localhost:5432/db',
+            'DB_DSN' => 'pgsql://user:pass@localhost:5432/db',
         ]);
 
         self::assertSame('Opora', $appConfig->appName);

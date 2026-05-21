@@ -213,7 +213,7 @@ final class HealthEndpointTest extends TestCase
                 AppConfig::class => new AppConfig(
                     appEnv: 'test',
                     debug: true,
-                    databaseUrl: 'pgsql:host=postgres;port=5432;dbname=opora',
+                    dbDsn: 'pgsql:host=postgres;port=5432;dbname=opora',
                     corsAllowedOrigins: ['*'],
                 ),
                 CorsConfig::class => [
