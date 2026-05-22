@@ -23,6 +23,7 @@ use Opora\Core\Config\SecurityHeadersConfig;
 use Opora\Core\Http\MiddlewarePipeline;
 use Opora\Core\Module\CoreModuleInstaller;
 use Opora\Core\Module\ModuleMigrationRunner;
+use Opora\Core\Module\ModuleMigrationRunnerInterface;
 use Opora\Core\Module\ModuleRegistry;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
@@ -414,6 +415,9 @@ final class Application
                         'configPath' => \dirname(__DIR__, 3) . '/config/opora-modules.php',
                     ],
                 ],
+
+                // Interface → concrete binding (InstallCommand depends on the interface)
+                ModuleMigrationRunnerInterface::class => Reference::to(ModuleMigrationRunner::class),
 
                 ModuleMigrationRunner::class => new ModuleMigrationRunner($databaseProvider, $logger),
 

@@ -7,6 +7,7 @@ use Opora\Core\Event\EventBus;
 use Opora\Core\Event\EventBusInterface;
 use Opora\Core\Module\CoreModuleInstaller;
 use Opora\Core\Module\ModuleMigrationRunner;
+use Opora\Core\Module\ModuleMigrationRunnerInterface;
 use Opora\Core\Module\ModuleRegistry;
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
@@ -28,6 +29,9 @@ return [
             'configPath' => __DIR__ . '/../opora-modules.php',
         ],
     ],
+
+    // Interface → concrete binding
+    ModuleMigrationRunnerInterface::class => ModuleMigrationRunner::class,
 
     ModuleMigrationRunner::class => [
         'class' => ModuleMigrationRunner::class,
